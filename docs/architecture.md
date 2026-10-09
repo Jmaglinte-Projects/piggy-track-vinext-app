@@ -1,5 +1,7 @@
 # PiggyTrack architecture
 
+For code-placement rules and feature-development examples, see the [Clean Architecture development guide](clean-architecture-guide.md).
+
 ## Clean Architecture structure
 
 Dependencies point inward. Inner layers never import React, Supabase, browser APIs, or outer layers.

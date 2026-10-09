@@ -35,4 +35,4 @@ pnpm build
 
 Phase 6 includes email/password authentication, multi-farm workspaces, hashed single-use family invitations, member management, Supabase RLS, repository-backed operational workflows, dedicated Feed management, and batch financial Reports. Reports cover profit, expenses, feed cost, cost per pig, selling weight, weighted price per kilogram, receivables, payments received, and ROI. New Reports and Settings UI use Tailwind CSS utilities. All financial metrics are derived from their underlying transactions. Local demo mode remains available when Supabase is not configured.
 
-See [docs/architecture.md](docs/architecture.md) for the proposed data model and layering.
+See [docs/architecture.md](docs/architecture.md) for the system design and [docs/clean-architecture-guide.md](docs/clean-architecture-guide.md) for layer responsibilities and code-placement guidance.

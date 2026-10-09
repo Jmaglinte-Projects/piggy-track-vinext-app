@@ -1,16 +1,34 @@
 # PiggyTrack architecture
 
-## Application structure
+## Clean Architecture structure
 
-- `app/` — vinext routes, root layout, and global design system
-- `components/` — reusable application shell, selectors, dashboard panels, and UI primitives
-- `data/` — realistic local-demo fixtures
-- `lib/` — pure business calculations and Philippine formatters
-- `types/` — framework-independent domain contracts
-- `services/` — repository contract plus local-storage and Supabase implementations
-- `features/` — focused business screens and their forms
+Dependencies point inward. Inner layers never import React, Supabase, browser APIs, or outer layers.
 
-UI components receive domain data and call pure helpers. They do not calculate transaction totals inline or communicate with Supabase directly.
+```text
+app / components / features / hooks
+                │
+                ▼
+          application
+       use cases + ports
+                │
+                ▼
+             domain
+  entities + rules + projections
+
+infrastructure ──implements──▶ application ports
+       │
+       └── wired only by infrastructure/composition-root.ts
+```
+
+- `domain/` — framework-independent entities, allowed values, calculations, and report projections.
+- `application/` — business workflow orchestration and interfaces (ports) required from external systems.
+- `infrastructure/` — Supabase, browser storage, local-demo repositories, generated database types, and the composition root.
+- `presentation/` — Philippine formatting and form-boundary helpers.
+- `app/`, `components/`, `features/`, `hooks/` — vinext/React presentation code.
+
+`PiggyTrackApplication` is the use-case boundary used by React. It coordinates repository commands, workspace reloads, farm switching, invitation acceptance, and preferred-farm persistence through injected ports. React hooks manage only view state such as loading and error messages.
+
+The local and Supabase repositories both implement the same application port. The composition root selects an adapter from environment configuration. ESLint rules prevent `domain/` and `application/` from importing outer layers.
 
 ## Proposed relational model
 
@@ -37,7 +55,7 @@ Feed is represented in `expenses` with `category = Feed` plus a nullable `feed_t
 
 The Feed feature is therefore a focused view over expense transactions rather than another persistence model. Its total cost, weighted price per sack, quantity, and cost per pig are calculated at runtime.
 
-Reports are also projection-only. `lib/reports.ts` turns transaction records into a typed batch report without persisting totals. Average selling price is weighted (`total sales ÷ total billable kilograms`), while average selling weight is the mean billable weight across sales.
+Reports are also projection-only. `domain/reports.ts` turns transaction records into a typed batch report without persisting totals. Average selling price is weighted (`total sales ÷ total billable kilograms`), while average selling weight is the mean billable weight across sales.
 
 Pig purchases and Piglets expense entries remain separate records by business decision. Creating a pig will not automatically create an expense. The purchase workflow should clearly offer an optional, explicit Piglets expense entry and warn about likely duplicates. Financial reports will count only expense transactions; `Pig.purchasePrice` remains operational purchase information and must not be added to expenses again when calculating batch totals.
 

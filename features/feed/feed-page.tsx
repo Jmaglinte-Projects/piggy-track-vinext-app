@@ -6,11 +6,12 @@ import { Icon } from "@/components/ui/icon";
 import { AppSelect, selectOptions } from "@/components/ui/select";
 import { ConfirmDelete, Modal } from "@/features/shared/modal";
 import { PageHeader } from "@/features/shared/page-header";
-import { calculateAverageFeedPrice, calculateBatchExpenses, calculateExpenseAmount, calculateFeedCostPerPig } from "@/lib/calculations";
-import { formatCurrency, formatDate } from "@/lib/formatters";
-import { feedTypes, formNumber, formString } from "@/lib/options";
-import type { Expense, FeedType, PiggyTrackData } from "@/types/domain";
-import type { ExpenseInput } from "@/services/piggy-track-repository";
+import { calculateAverageFeedPrice, calculateBatchExpenses, calculateExpenseAmount, calculateFeedCostPerPig } from "@/domain/calculations";
+import { formatCurrency, formatDate } from "@/presentation/formatters";
+import { feedTypes } from "@/domain/constants";
+import { formNumber, formString } from "@/presentation/form-utils";
+import type { Expense, FeedType, PiggyTrackData } from "@/domain/entities";
+import type { ExpenseInput } from "@/application/ports/piggy-track-repository";
 
 interface FeedPageProps {
   data: PiggyTrackData;

@@ -12,4 +12,26 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "error",
     },
   },
+  {
+    files: ["domain/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{
+          group: ["@/application/**", "@/infrastructure/**", "@/presentation/**", "@/components/**", "@/features/**", "@/hooks/**", "@/app/**", "react", "@supabase/**"],
+          message: "The domain layer must remain framework- and infrastructure-independent.",
+        }],
+      }],
+    },
+  },
+  {
+    files: ["application/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{
+          group: ["@/infrastructure/**", "@/presentation/**", "@/components/**", "@/features/**", "@/hooks/**", "@/app/**", "react", "@supabase/**"],
+          message: "The application layer may depend only on domain code and application ports.",
+        }],
+      }],
+    },
+  },
 );

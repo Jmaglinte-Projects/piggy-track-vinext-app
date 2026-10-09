@@ -1,5 +1,5 @@
-import type { Batch } from "@/types/domain";
-import { formatDate } from "@/lib/formatters";
+import type { Batch } from "@/domain/entities";
+import { formatDate } from "@/presentation/formatters";
 import { AppSelect } from "@/components/ui/select";
 
 interface BatchSelectorProps {

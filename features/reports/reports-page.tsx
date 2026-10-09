@@ -2,9 +2,9 @@
 
 import { Icon } from "@/components/ui/icon";
 import { AppSelect } from "@/components/ui/select";
-import { formatCurrency, formatDate, formatPercent, formatWeight } from "@/lib/formatters";
-import { buildAllBatchReports, buildBatchReport, type BatchReport } from "@/lib/reports";
-import type { PiggyTrackData } from "@/types/domain";
+import { formatCurrency, formatDate, formatPercent, formatWeight } from "@/presentation/formatters";
+import { buildAllBatchReports, buildBatchReport, type BatchReport } from "@/domain/reports";
+import type { PiggyTrackData } from "@/domain/entities";
 
 interface ReportsPageProps {
   data: PiggyTrackData;

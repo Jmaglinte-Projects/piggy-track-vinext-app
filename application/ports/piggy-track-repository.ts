@@ -1,4 +1,4 @@
-import type { Batch, Buyer, Expense, Payment, Pig, PigSale, PiggyTrackData } from "@/types/domain";
+import type { Batch, Buyer, Expense, Payment, Pig, PigSale, PiggyTrackData } from "@/domain/entities";
 
 export interface WorkspaceSnapshot {
   farmId: string;

@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
-import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { AuthUser } from "@/application/ports/auth-gateway";
+import { createAuthGateway } from "@/infrastructure/composition-root";
 
 export interface AuthState {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   configured: boolean;
   message: string | null;
@@ -15,39 +15,34 @@ export interface AuthState {
 }
 
 export function useAuth(): AuthState {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(isSupabaseConfigured);
+  const gateway = useMemo(() => createAuthGateway(), []);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(gateway.configured);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
-    const client = getSupabaseClient();
-    void client.auth.getUser().then(({ data }) => { setUser(data.user); setLoading(false); });
-    const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, []);
+    if (!gateway.configured) return;
+    void gateway.getCurrentUser()
+      .then(setUser)
+      .catch((cause: unknown) => setMessage(cause instanceof Error ? cause.message : "Unable to check your session."))
+      .finally(() => setLoading(false));
+    return gateway.subscribe((nextUser) => { setUser(nextUser); setLoading(false); });
+  }, [gateway]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     setMessage(null);
-    const result = await getSupabaseClient().auth.signInWithPassword({ email, password });
-    if (result.error) throw new Error(result.error.message);
-  }, []);
+    await gateway.signIn(email, password);
+  }, [gateway]);
 
   const signUp = useCallback(async (email: string, password: string) => {
     setMessage(null);
-    const result = await getSupabaseClient().auth.signUp({ email, password });
-    if (result.error) throw new Error(result.error.message);
-    if (!result.data.session) setMessage("Check your email to confirm your PiggyTrack account, then sign in.");
-  }, []);
+    const result = await gateway.signUp(email, password);
+    if (result.requiresEmailConfirmation) setMessage("Check your email to confirm your PiggyTrack account, then sign in.");
+  }, [gateway]);
 
   const signOut = useCallback(async () => {
-    if (!isSupabaseConfigured) return;
-    const result = await getSupabaseClient().auth.signOut();
-    if (result.error) throw new Error(result.error.message);
-  }, []);
+    await gateway.signOut();
+  }, [gateway]);
 
-  return { user, loading, configured: isSupabaseConfigured, message, signIn, signUp, signOut };
+  return { user, loading, configured: gateway.configured, message, signIn, signUp, signOut };
 }

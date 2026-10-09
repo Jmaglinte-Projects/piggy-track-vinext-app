@@ -5,10 +5,11 @@ import { BatchSelector } from "@/components/batch-selector";
 import { AppSelect, selectOptions } from "@/components/ui/select";
 import { PageHeader } from "@/features/shared/page-header";
 import { ConfirmDelete, Modal } from "@/features/shared/modal";
-import { formNumber, formString, pigStatuses } from "@/lib/options";
-import { formatCurrency, formatWeight } from "@/lib/formatters";
-import type { Pig, PigStatus, PiggyTrackData } from "@/types/domain";
-import type { PigInput } from "@/services/piggy-track-repository";
+import { pigStatuses } from "@/domain/constants";
+import { formNumber, formString } from "@/presentation/form-utils";
+import { formatCurrency, formatWeight } from "@/presentation/formatters";
+import type { Pig, PigStatus, PiggyTrackData } from "@/domain/entities";
+import type { PigInput } from "@/application/ports/piggy-track-repository";
 
 interface PigsPageProps { data: PiggyTrackData; selectedBatchId: string; onBatchChange: (id: string) => void; saving: boolean; onSave: (input: PigInput, id?: string) => Promise<void>; onDelete: (id: string) => Promise<void> }
 

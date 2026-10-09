@@ -5,11 +5,12 @@ import { BatchSelector } from "@/components/batch-selector";
 import { AppSelect, selectOptions } from "@/components/ui/select";
 import { PageHeader } from "@/features/shared/page-header";
 import { ConfirmDelete, Modal } from "@/features/shared/modal";
-import { calculateBatchExpenses, calculateExpenseAmount } from "@/lib/calculations";
-import { formatCurrency, formatDate } from "@/lib/formatters";
-import { expenseCategories, feedTypes, formNumber, formString } from "@/lib/options";
-import type { Expense, ExpenseCategory, FeedType, PiggyTrackData } from "@/types/domain";
-import type { ExpenseInput } from "@/services/piggy-track-repository";
+import { calculateBatchExpenses, calculateExpenseAmount } from "@/domain/calculations";
+import { formatCurrency, formatDate } from "@/presentation/formatters";
+import { expenseCategories, feedTypes } from "@/domain/constants";
+import { formNumber, formString } from "@/presentation/form-utils";
+import type { Expense, ExpenseCategory, FeedType, PiggyTrackData } from "@/domain/entities";
+import type { ExpenseInput } from "@/application/ports/piggy-track-repository";
 
 interface ExpensesPageProps { data: PiggyTrackData; selectedBatchId: string; onBatchChange: (id: string) => void; saving: boolean; onSave: (input: ExpenseInput, id?: string) => Promise<void>; onDelete: (id: string) => Promise<void> }
 

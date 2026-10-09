@@ -6,11 +6,11 @@ import { Icon } from "@/components/ui/icon";
 import { AppSelect, selectOptions } from "@/components/ui/select";
 import { ConfirmDelete, Modal } from "@/features/shared/modal";
 import { PageHeader } from "@/features/shared/page-header";
-import { calculateBillableWeight, calculateOutstandingBalance, calculateSaleTotal, getPaymentStatus } from "@/lib/calculations";
-import { formatCurrency, formatDate, formatWeight } from "@/lib/formatters";
-import { formNumber, formString } from "@/lib/options";
-import type { Payment, PigSale, PiggyTrackData } from "@/types/domain";
-import type { PaymentInput, SaleInput } from "@/services/piggy-track-repository";
+import { calculateBillableWeight, calculateOutstandingBalance, calculateSaleTotal, getPaymentStatus } from "@/domain/calculations";
+import { formatCurrency, formatDate, formatWeight } from "@/presentation/formatters";
+import { formNumber, formString } from "@/presentation/form-utils";
+import type { Payment, PigSale, PiggyTrackData } from "@/domain/entities";
+import type { PaymentInput, SaleInput } from "@/application/ports/piggy-track-repository";
 
 interface SalesPageProps { data: PiggyTrackData; selectedBatchId: string; onBatchChange: (id: string) => void; saving: boolean; onSaveSale: (input: SaleInput, id?: string) => Promise<void>; onDeleteSale: (id: string) => Promise<void>; onSavePayment: (input: PaymentInput, id?: string) => Promise<void>; onDeletePayment: (id: string) => Promise<void>; onOpenBuyers: () => void }
 

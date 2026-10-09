@@ -1,4 +1,4 @@
-import type { PiggyTrackData } from "@/types/domain";
+import type { PiggyTrackData } from "@/domain/entities";
 
 export const mockData: PiggyTrackData = {
   batches: [

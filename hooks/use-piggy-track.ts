@@ -1,10 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createRepository } from "@/services/repository";
-import type { BatchInput, BuyerInput, ExpenseInput, FarmInvitation, PaymentInput, PigInput, SaleInput, WorkspaceSnapshot } from "@/services/piggy-track-repository";
-
-const preferredFarmKey = "piggytrack-preferred-farm";
+import { createPiggyTrackApplication } from "@/infrastructure/composition-root";
+import type { BatchInput, BuyerInput, ExpenseInput, FarmInvitation, PaymentInput, PigInput, SaleInput, WorkspaceSnapshot } from "@/application/ports/piggy-track-repository";
 
 export interface PiggyTrackState {
   workspace: WorkspaceSnapshot | null;
@@ -32,7 +30,7 @@ export interface PiggyTrackState {
 }
 
 export function usePiggyTrack(enabled: boolean): PiggyTrackState {
-  const repository = useMemo(() => createRepository(), []);
+  const application = useMemo(() => createPiggyTrackApplication(), []);
   const [workspace, setWorkspace] = useState<WorkspaceSnapshot | null>(null);
   const [loading, setLoading] = useState(enabled);
   const [saving, setSaving] = useState(false);
@@ -41,52 +39,52 @@ export function usePiggyTrack(enabled: boolean): PiggyTrackState {
   const reload = useCallback(async () => {
     if (!enabled) return;
     setLoading(true); setError(null);
-    try { setWorkspace(await repository.loadWorkspace(window.localStorage.getItem(preferredFarmKey) ?? undefined)); }
+    try { setWorkspace(await application.loadWorkspace()); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to load PiggyTrack."); }
     finally { setLoading(false); }
-  }, [enabled, repository]);
+  }, [application, enabled]);
 
   useEffect(() => { void reload(); }, [reload]);
 
-  const mutate = useCallback(async (operation: () => Promise<unknown>) => {
+  const mutate = useCallback(async (operation: () => Promise<WorkspaceSnapshot>) => {
     setSaving(true); setError(null);
-    try { await operation(); setWorkspace(await repository.loadWorkspace()); }
+    try { setWorkspace(await operation()); }
     catch (cause) { const message = cause instanceof Error ? cause.message : "Unable to save changes."; setError(message); throw cause; }
     finally { setSaving(false); }
-  }, [repository]);
+  }, []);
 
   const switchFarm = useCallback(async (farmId: string) => {
     setSaving(true); setError(null);
-    try { const next = await repository.loadWorkspace(farmId); window.localStorage.setItem(preferredFarmKey, next.farmId); setWorkspace(next); }
+    try { setWorkspace(await application.switchFarm(farmId)); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to switch farms."); throw cause; }
     finally { setSaving(false); }
-  }, [repository]);
+  }, [application]);
 
   const acceptFarmInvitation = useCallback(async (code: string) => {
     setSaving(true); setError(null);
-    try { const farmId = await repository.acceptFarmInvitation(code); const next = await repository.loadWorkspace(farmId); window.localStorage.setItem(preferredFarmKey, farmId); setWorkspace(next); }
+    try { setWorkspace(await application.acceptFarmInvitation(code)); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to join farm."); throw cause; }
     finally { setSaving(false); }
-  }, [repository]);
+  }, [application]);
 
   return {
     workspace, loading, saving, error, reload,
-    saveBatch: (input, id) => mutate(() => repository.saveBatch(input, id)),
-    deleteBatch: (id) => mutate(() => repository.deleteBatch(id)),
-    savePig: (input, id) => mutate(() => repository.savePig(input, id)),
-    deletePig: (id) => mutate(() => repository.deletePig(id)),
-    saveExpense: (input, id) => mutate(() => repository.saveExpense(input, id)),
-    deleteExpense: (id) => mutate(() => repository.deleteExpense(id)),
-    saveBuyer: (input, id) => mutate(() => repository.saveBuyer(input, id)),
-    deleteBuyer: (id) => mutate(() => repository.deleteBuyer(id)),
-    saveSale: (input, id) => mutate(() => repository.saveSale(input, id)),
-    deleteSale: (id) => mutate(() => repository.deleteSale(id)),
-    savePayment: (input, id) => mutate(() => repository.savePayment(input, id)),
-    deletePayment: (id) => mutate(() => repository.deletePayment(id)),
+    saveBatch: (input, id) => mutate(() => application.saveBatch(input, id)),
+    deleteBatch: (id) => mutate(() => application.deleteBatch(id)),
+    savePig: (input, id) => mutate(() => application.savePig(input, id)),
+    deletePig: (id) => mutate(() => application.deletePig(id)),
+    saveExpense: (input, id) => mutate(() => application.saveExpense(input, id)),
+    deleteExpense: (id) => mutate(() => application.deleteExpense(id)),
+    saveBuyer: (input, id) => mutate(() => application.saveBuyer(input, id)),
+    deleteBuyer: (id) => mutate(() => application.deleteBuyer(id)),
+    saveSale: (input, id) => mutate(() => application.saveSale(input, id)),
+    deleteSale: (id) => mutate(() => application.deleteSale(id)),
+    savePayment: (input, id) => mutate(() => application.savePayment(input, id)),
+    deletePayment: (id) => mutate(() => application.deletePayment(id)),
     switchFarm,
-    renameFarm: (name) => mutate(() => repository.renameFarm(name)),
-    createFarmInvitation: () => repository.createFarmInvitation(),
+    renameFarm: (name) => mutate(() => application.renameFarm(name)),
+    createFarmInvitation: () => application.createFarmInvitation(),
     acceptFarmInvitation,
-    removeFarmMember: (userId) => mutate(() => repository.removeFarmMember(userId)),
+    removeFarmMember: (userId) => mutate(() => application.removeFarmMember(userId)),
   };
 }

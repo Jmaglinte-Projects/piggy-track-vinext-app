@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { PageHeader } from "@/features/shared/page-header";
 import { ConfirmDelete, Modal } from "@/features/shared/modal";
-import { formString } from "@/lib/options";
-import type { Buyer, PiggyTrackData } from "@/types/domain";
-import type { BuyerInput } from "@/services/piggy-track-repository";
+import { formString } from "@/presentation/form-utils";
+import type { Buyer, PiggyTrackData } from "@/domain/entities";
+import type { BuyerInput } from "@/application/ports/piggy-track-repository";
 
 interface BuyersPageProps { data: PiggyTrackData; saving: boolean; onSave: (input: BuyerInput, id?: string) => Promise<void>; onDelete: (id: string) => Promise<void> }
 

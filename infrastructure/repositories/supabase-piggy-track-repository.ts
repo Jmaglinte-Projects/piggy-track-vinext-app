@@ -1,7 +1,7 @@
-import { getSupabaseClient } from "@/lib/supabase/client";
-import type { Batch, Buyer, Expense, ExpenseCategory, FeedType, Payment, Pig, PigSale, PiggyTrackData } from "@/types/domain";
-import type { Database } from "@/types/database";
-import type { BatchInput, BuyerInput, ExpenseInput, FarmInvitation, FarmMember, FarmRole, FarmWorkspace, PaymentInput, PigInput, PiggyTrackRepository, SaleInput, WorkspaceSnapshot } from "@/services/piggy-track-repository";
+import { getSupabaseClient } from "@/infrastructure/supabase/client";
+import type { Batch, Buyer, Expense, ExpenseCategory, FeedType, Payment, Pig, PigSale, PiggyTrackData } from "@/domain/entities";
+import type { Database } from "@/infrastructure/supabase/database.types";
+import type { BatchInput, BuyerInput, ExpenseInput, FarmInvitation, FarmMember, FarmRole, FarmWorkspace, PaymentInput, PigInput, PiggyTrackRepository, SaleInput, WorkspaceSnapshot } from "@/application/ports/piggy-track-repository";
 
 type BatchRow = Database["public"]["Tables"]["batches"]["Row"];
 type PigRow = Database["public"]["Tables"]["pigs"]["Row"];

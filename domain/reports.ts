@@ -8,8 +8,8 @@ import {
   calculateOutstandingBalance,
   calculatePaymentsReceived,
   calculateRoi,
-} from "@/lib/calculations";
-import type { Batch, ExpenseCategory, PiggyTrackData } from "@/types/domain";
+} from "@/domain/calculations";
+import type { Batch, ExpenseCategory, PiggyTrackData } from "@/domain/entities";
 
 export interface BatchReport {
   batch: Batch;

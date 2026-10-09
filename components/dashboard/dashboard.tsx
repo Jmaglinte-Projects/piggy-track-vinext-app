@@ -11,9 +11,9 @@ import {
   calculateRoi,
   calculateSaleTotal,
   getPaymentStatus,
-} from "@/lib/calculations";
-import { formatCurrency, formatDate, formatPercent, formatWeight } from "@/lib/formatters";
-import type { ExpenseCategory, PiggyTrackData } from "@/types/domain";
+} from "@/domain/calculations";
+import { formatCurrency, formatDate, formatPercent, formatWeight } from "@/presentation/formatters";
+import type { ExpenseCategory, PiggyTrackData } from "@/domain/entities";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { Icon } from "@/components/ui/icon";
 

@@ -1,7 +1,7 @@
-import { mockData } from "@/data/mock-data";
-import { calculateOutstandingBalance } from "@/lib/calculations";
-import type { Batch, Buyer, Expense, Payment, Pig, PigSale, PiggyTrackData } from "@/types/domain";
-import type { BatchInput, BuyerInput, ExpenseInput, FarmInvitation, PaymentInput, PigInput, PiggyTrackRepository, SaleInput, WorkspaceSnapshot } from "@/services/piggy-track-repository";
+import { mockData } from "@/infrastructure/local/mock-data";
+import { calculateOutstandingBalance } from "@/domain/calculations";
+import type { Batch, Buyer, Expense, Payment, Pig, PigSale, PiggyTrackData } from "@/domain/entities";
+import type { BatchInput, BuyerInput, ExpenseInput, FarmInvitation, PaymentInput, PigInput, PiggyTrackRepository, SaleInput, WorkspaceSnapshot } from "@/application/ports/piggy-track-repository";
 
 const storageKey = "piggytrack-demo-workspace-v2";
 const farmNameKey = "piggytrack-demo-farm-name";

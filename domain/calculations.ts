@@ -1,4 +1,4 @@
-import type { Expense, Payment, Pig, PigSale } from "@/types/domain";
+import type { Expense, Payment, Pig, PigSale } from "@/domain/entities";
 
 export function calculateExpenseAmount(expense: Expense): number {
   return expense.quantity * expense.unitPrice;

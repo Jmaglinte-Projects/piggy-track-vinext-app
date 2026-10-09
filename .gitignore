@@ -1,0 +1,9 @@
+node_modules
+.pnpm-store/
+*.tsbuildinfo
+.env*
+.next
+next-env.d.ts
+/dist/
+.vinext/
+.cloudflare/

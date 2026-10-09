@@ -1,0 +1,40 @@
+{
+  "name": "piggy-track-vinext-app",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.24.0",
+  "dependencies": {
+    "@radix-ui/react-select": "^2.3.8",
+    "@supabase/supabase-js": "^2.117.2",
+    "@vinext/cloudflare": "^1.0.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-server-dom-webpack": "^19.3.0",
+    "vinext": "^1.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "2.0.0-beta.sha-ad79608dd",
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-rsc": "^0.5.35",
+    "cf": "1.0.0-beta.3",
+    "eslint": "^10.11.0",
+    "tailwindcss": "latest",
+    "typescript": "6.0.2",
+    "typescript-eslint": "^8.70.1",
+    "vite": "8.3.0"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "start": "vite preview",
+    "deploy": "vinext-cloudflare deploy"
+  }
+}

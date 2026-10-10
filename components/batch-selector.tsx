@@ -23,7 +23,9 @@ export function BatchSelector({ batches, selectedBatchId, onChange }: BatchSelec
             onValueChange={onChange}
             options={batches.map((batch) => ({ value: batch.id, label: batch.name }))}
           />
-          <p>{selected.status} · Started {formatDate(selected.startDate)}</p>
+          <p>
+            {selected.status} · Started {formatDate(selected.startDate)}
+          </p>
         </div>
       </div>
     </div>

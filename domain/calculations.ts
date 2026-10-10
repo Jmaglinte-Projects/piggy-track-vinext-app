@@ -52,7 +52,11 @@ export function calculateRoi(netProfit: number, totalExpenses: number): number {
   return totalExpenses === 0 ? 0 : (netProfit / totalExpenses) * 100;
 }
 
-export function calculateDaysInCycle(startDate: string, endDate: string | null, today = new Date()): number {
+export function calculateDaysInCycle(
+  startDate: string,
+  endDate: string | null,
+  today = new Date(),
+): number {
   const start = new Date(`${startDate}T00:00:00+08:00`);
   const end = endDate ? new Date(`${endDate}T00:00:00+08:00`) : today;
   return Math.max(0, Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1);

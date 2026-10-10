@@ -14,12 +14,7 @@ export type ExpenseCategory =
   | "Electricity"
   | "Other";
 
-export type FeedType =
-  | "Pre Starter"
-  | "Starter"
-  | "Starter Premium"
-  | "Grower"
-  | "Finisher";
+export type FeedType = "Pre Starter" | "Starter" | "Starter Premium" | "Grower" | "Finisher";
 
 export interface Batch {
   id: string;

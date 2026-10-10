@@ -2,7 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPiggyTrackApplication } from "@/infrastructure/composition-root";
-import type { BatchInput, BuyerInput, ExpenseInput, FarmInvitation, PaymentInput, PigInput, SaleInput, WorkspaceSnapshot } from "@/application/ports/piggy-track-repository";
+import type {
+  BatchInput,
+  BuyerInput,
+  ExpenseInput,
+  FarmInvitation,
+  PaymentInput,
+  PigInput,
+  SaleInput,
+  WorkspaceSnapshot,
+} from "@/application/ports/piggy-track-repository";
 
 export interface PiggyTrackState {
   workspace: WorkspaceSnapshot | null;
@@ -38,37 +47,73 @@ export function usePiggyTrack(enabled: boolean): PiggyTrackState {
 
   const reload = useCallback(async () => {
     if (!enabled) return;
-    setLoading(true); setError(null);
-    try { setWorkspace(await application.loadWorkspace()); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to load PiggyTrack."); }
-    finally { setLoading(false); }
+    setLoading(true);
+    setError(null);
+    try {
+      setWorkspace(await application.loadWorkspace());
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to load PiggyTrack.");
+    } finally {
+      setLoading(false);
+    }
   }, [application, enabled]);
 
-  useEffect(() => { void reload(); }, [reload]);
+  useEffect(() => {
+    void reload();
+  }, [reload]);
 
   const mutate = useCallback(async (operation: () => Promise<WorkspaceSnapshot>) => {
-    setSaving(true); setError(null);
-    try { setWorkspace(await operation()); }
-    catch (cause) { const message = cause instanceof Error ? cause.message : "Unable to save changes."; setError(message); throw cause; }
-    finally { setSaving(false); }
+    setSaving(true);
+    setError(null);
+    try {
+      setWorkspace(await operation());
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "Unable to save changes.";
+      setError(message);
+      throw cause;
+    } finally {
+      setSaving(false);
+    }
   }, []);
 
-  const switchFarm = useCallback(async (farmId: string) => {
-    setSaving(true); setError(null);
-    try { setWorkspace(await application.switchFarm(farmId)); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to switch farms."); throw cause; }
-    finally { setSaving(false); }
-  }, [application]);
+  const switchFarm = useCallback(
+    async (farmId: string) => {
+      setSaving(true);
+      setError(null);
+      try {
+        setWorkspace(await application.switchFarm(farmId));
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Unable to switch farms.");
+        throw cause;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [application],
+  );
 
-  const acceptFarmInvitation = useCallback(async (code: string) => {
-    setSaving(true); setError(null);
-    try { setWorkspace(await application.acceptFarmInvitation(code)); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Unable to join farm."); throw cause; }
-    finally { setSaving(false); }
-  }, [application]);
+  const acceptFarmInvitation = useCallback(
+    async (code: string) => {
+      setSaving(true);
+      setError(null);
+      try {
+        setWorkspace(await application.acceptFarmInvitation(code));
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Unable to join farm.");
+        throw cause;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [application],
+  );
 
   return {
-    workspace, loading, saving, error, reload,
+    workspace,
+    loading,
+    saving,
+    error,
+    reload,
     saveBatch: (input, id) => mutate(() => application.saveBatch(input, id)),
     deleteBatch: (id) => mutate(() => application.deleteBatch(id)),
     savePig: (input, id) => mutate(() => application.savePig(input, id)),

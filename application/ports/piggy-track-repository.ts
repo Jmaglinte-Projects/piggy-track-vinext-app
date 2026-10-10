@@ -1,4 +1,12 @@
-import type { Batch, Buyer, Expense, Payment, Pig, PigSale, PiggyTrackData } from "@/domain/entities";
+import type {
+  Batch,
+  Buyer,
+  Expense,
+  Payment,
+  Pig,
+  PigSale,
+  PiggyTrackData,
+} from "@/domain/entities";
 
 export interface WorkspaceSnapshot {
   farmId: string;
@@ -10,9 +18,21 @@ export interface WorkspaceSnapshot {
 }
 
 export type FarmRole = "Owner" | "Member";
-export interface FarmWorkspace { id: string; name: string; role: FarmRole }
-export interface FarmMember { userId: string; email: string; role: FarmRole; joinedAt: string }
-export interface FarmInvitation { code: string; expiresAt: string }
+export interface FarmWorkspace {
+  id: string;
+  name: string;
+  role: FarmRole;
+}
+export interface FarmMember {
+  userId: string;
+  email: string;
+  role: FarmRole;
+  joinedAt: string;
+}
+export interface FarmInvitation {
+  code: string;
+  expiresAt: string;
+}
 
 export type BatchInput = Omit<Batch, "id" | "createdAt" | "updatedAt">;
 export type PigInput = Omit<Pig, "id">;

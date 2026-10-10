@@ -13,6 +13,7 @@
     "vinext": "^1.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@cloudflare/vite-plugin": "2.0.0-beta.sha-ad79608dd",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "latest",
@@ -34,7 +35,10 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
     "start": "vite preview",
-    "deploy": "vinext-cloudflare deploy"
+    "deploy:dev": "vinext-cloudflare deploy --env development",
+    "deploy:prod": "vinext-cloudflare deploy --env production"
   }
 }

@@ -50,7 +50,13 @@ export function AppSelect({
         <SelectPrimitive.Value />
         <SelectPrimitive.Icon aria-hidden="true" className="app-select-chevron">
           <svg viewBox="0 0 20 20" fill="none">
-            <path d="m6 8 4 4 4-4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+            <path
+              d="m6 8 4 4 4-4"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.8"
+            />
           </svg>
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
@@ -62,7 +68,10 @@ export function AppSelect({
           collisionPadding={12}
           className="app-select-content"
         >
-          <SelectPrimitive.ScrollUpButton className="app-select-scroll-button" aria-label="Scroll up">
+          <SelectPrimitive.ScrollUpButton
+            className="app-select-scroll-button"
+            aria-label="Scroll up"
+          >
             <span aria-hidden="true">↑</span>
           </SelectPrimitive.ScrollUpButton>
           <SelectPrimitive.Viewport className="app-select-viewport">
@@ -75,14 +84,23 @@ export function AppSelect({
               >
                 <SelectPrimitive.ItemIndicator className="app-select-check" aria-hidden="true">
                   <svg viewBox="0 0 20 20" fill="none">
-                    <path d="m4 10 4 4 8-9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <path
+                      d="m4 10 4 4 8-9"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                    />
                   </svg>
                 </SelectPrimitive.ItemIndicator>
                 <SelectPrimitive.ItemText>{option.label ?? option.value}</SelectPrimitive.ItemText>
               </SelectPrimitive.Item>
             ))}
           </SelectPrimitive.Viewport>
-          <SelectPrimitive.ScrollDownButton className="app-select-scroll-button" aria-label="Scroll down">
+          <SelectPrimitive.ScrollDownButton
+            className="app-select-scroll-button"
+            aria-label="Scroll down"
+          >
             <span aria-hidden="true">↓</span>
           </SelectPrimitive.ScrollDownButton>
         </SelectPrimitive.Content>

@@ -44,10 +44,17 @@ export function buildBatchReport(data: PiggyTrackData, batchId: string): BatchRe
   const netProfit = calculateNetProfit(totalSales, totalExpenses);
   const totalBillableWeight = sales.reduce((sum, sale) => sum + calculateBillableWeight(sale), 0);
 
-  const expenseBreakdown = Array.from(expenses.reduce((totals, expense) => {
-    totals.set(expense.category, (totals.get(expense.category) ?? 0) + expense.quantity * expense.unitPrice);
-    return totals;
-  }, new Map<ExpenseCategory, number>())).map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
+  const expenseBreakdown = Array.from(
+    expenses.reduce((totals, expense) => {
+      totals.set(
+        expense.category,
+        (totals.get(expense.category) ?? 0) + expense.quantity * expense.unitPrice,
+      );
+      return totals;
+    }, new Map<ExpenseCategory, number>()),
+  )
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount);
 
   return {
     batch,
@@ -69,5 +76,7 @@ export function buildBatchReport(data: PiggyTrackData, batchId: string): BatchRe
 }
 
 export function buildAllBatchReports(data: PiggyTrackData): BatchReport[] {
-  return data.batches.map((batch) => buildBatchReport(data, batch.id)).filter((report): report is BatchReport => report !== null);
+  return data.batches
+    .map((batch) => buildBatchReport(data, batch.id))
+    .filter((report): report is BatchReport => report !== null);
 }

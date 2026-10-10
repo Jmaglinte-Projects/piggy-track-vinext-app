@@ -28,8 +28,16 @@ The first signed-in account automatically creates a farm workspace and becomes i
 ```bash
 pnpm typecheck
 pnpm lint
+pnpm format:check
 pnpm build
 ```
+
+Run `pnpm format` to format supported source and configuration files with Biome.
+Biome respects `.gitignore`; ESLint continues to enforce code quality and architecture rules.
+
+In VS Code, install the recommended **Biome** extension (`biomejs.biome`). The
+workspace settings enable format on save for JavaScript, TypeScript, JSX, TSX,
+JSON, JSONC, and CSS files using the project's Biome configuration.
 
 ## Current scope
 

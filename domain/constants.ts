@@ -15,4 +15,10 @@ export const expenseCategories: readonly ExpenseCategory[] = [
   "Electricity",
   "Other",
 ];
-export const feedTypes: readonly FeedType[] = ["Pre Starter", "Starter", "Starter Premium", "Grower", "Finisher"];
+export const feedTypes: readonly FeedType[] = [
+  "Pre Starter",
+  "Starter",
+  "Starter Premium",
+  "Grower",
+  "Finisher",
+];

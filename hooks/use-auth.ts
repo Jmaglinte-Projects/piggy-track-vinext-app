@@ -22,23 +22,36 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     if (!gateway.configured) return;
-    void gateway.getCurrentUser()
+    void gateway
+      .getCurrentUser()
       .then(setUser)
-      .catch((cause: unknown) => setMessage(cause instanceof Error ? cause.message : "Unable to check your session."))
+      .catch((cause: unknown) =>
+        setMessage(cause instanceof Error ? cause.message : "Unable to check your session."),
+      )
       .finally(() => setLoading(false));
-    return gateway.subscribe((nextUser) => { setUser(nextUser); setLoading(false); });
+    return gateway.subscribe((nextUser) => {
+      setUser(nextUser);
+      setLoading(false);
+    });
   }, [gateway]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    setMessage(null);
-    await gateway.signIn(email, password);
-  }, [gateway]);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      setMessage(null);
+      await gateway.signIn(email, password);
+    },
+    [gateway],
+  );
 
-  const signUp = useCallback(async (email: string, password: string) => {
-    setMessage(null);
-    const result = await gateway.signUp(email, password);
-    if (result.requiresEmailConfirmation) setMessage("Check your email to confirm your PiggyTrack account, then sign in.");
-  }, [gateway]);
+  const signUp = useCallback(
+    async (email: string, password: string) => {
+      setMessage(null);
+      const result = await gateway.signUp(email, password);
+      if (result.requiresEmailConfirmation)
+        setMessage("Check your email to confirm your PiggyTrack account, then sign in.");
+    },
+    [gateway],
+  );
 
   const signOut = useCallback(async () => {
     await gateway.signOut();

@@ -25,7 +25,9 @@ export class PiggyTrackApplication {
   ) {}
 
   async loadWorkspace(): Promise<WorkspaceSnapshot> {
-    const workspace = await this.repository.loadWorkspace(this.farmPreferenceStore.getPreferredFarmId());
+    const workspace = await this.repository.loadWorkspace(
+      this.farmPreferenceStore.getPreferredFarmId(),
+    );
     this.farmPreferenceStore.setPreferredFarmId(workspace.farmId);
     return workspace;
   }

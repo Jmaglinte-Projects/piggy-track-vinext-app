@@ -38,6 +38,8 @@ Replace `YOUR_PROJECT_REF` with the project reference from your Supabase dashboa
 
 ## Quality checks
 
+For future features, use shared shadcn/ui primitives in `components/ui/` and add or update unit tests for domain rules and important logic, especially financial calculations, permissions, validation, and critical application workflows. See [AGENTS.md](AGENTS.md) and the [development guide](docs/clean-architecture-guide.md) for the full standards and review checklist.
+
 ```bash
 pnpm test
 pnpm typecheck

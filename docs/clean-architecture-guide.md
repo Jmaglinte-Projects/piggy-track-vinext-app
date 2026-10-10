@@ -171,6 +171,10 @@ A feature must not:
 
 Put reusable UI shared across features here, including the application shell, dashboard widgets, batch selector, and UI primitives.
 
+Use **shadcn/ui as the default for new UI primitives and interactive controls**. Reuse or extend components in `components/ui/` first. When a suitable primitive is missing, add the relevant shadcn/ui component and any required setup or dependencies there, then compose it into feature screens. Keep business rules out of these components.
+
+Adapt components to the existing design tokens, Tailwind styling, and mobile layout while preserving labels, keyboard navigation, focus management, and accessible error states. Custom components are appropriate for farm-specific views, charts, and layouts or requirements that shadcn/ui does not cover; explain material exceptions in the change description. Apply the standard to new work and substantially changed components without requiring a full migration of existing UI.
+
 ### `hooks/`
 
 Hooks adapt application behavior to React state. They may manage loading, saving, and error states, but application workflows belong in `application/`.
@@ -223,14 +227,25 @@ Use this order so dependencies continue to point inward:
 5. Implement or update the local adapter.
 6. Add the Supabase migration and repository implementation when persistence changes.
 7. Expose the workflow through the React hook.
-8. Build the feature UI.
-9. Run the architecture and production checks.
+8. Build the feature UI using shared shadcn/ui primitives where applicable.
+9. Add or update tests for important application workflows and affected integration boundaries.
+10. Run the tests, architecture, formatting, and production checks.
 
 ```bash
+pnpm test
 pnpm typecheck
 pnpm lint
+pnpm format:check
 pnpm build
 ```
+
+## Testing standard
+
+Add or update unit tests whenever a feature changes domain business rules, financial calculations, validation, permission decisions, or other functions whose failure could affect money, access, or data integrity. Important application workflows also need tests, using small fakes or stubs for their ports. Pure domain tests should run without React, browser storage, or Supabase.
+
+Use the existing `node:test` and `node:assert/strict` setup and put tests in `tests/*.test.ts`, which `pnpm test` discovers. Cover expected behavior, relevant boundaries, and failure cases. Examples include zero expenses or sales, weight deductions exceeding actual weight, overpayments, empty report data, and rejected Viewer mutations. Choose cases that apply to the rule being changed. Bug fixes in these areas must include a regression test that demonstrates the bug.
+
+Assert observable behavior and business outcomes rather than private implementation details. Trivial wrappers and styling-only changes do not need unit tests. Repository behavior, SQL migrations, and database permissions need integration tests when unit tests cannot verify their boundary; automated checks must stay isolated from live Supabase data. Inspect interactive UI changes for mobile layout and keyboard behavior.
 
 ## Review checklist
 
@@ -244,7 +259,9 @@ Before merging a change, verify:
 - Calculated totals are not persisted unless a documented business requirement requires a snapshot.
 - Pig purchase records own one linked Piglets expense, synchronized atomically by the repository. Financial calculations use the ledger only; replaced legacy entries are excluded.
 - New behavior works with both the local and Supabase repository implementations where applicable.
-- TypeScript, lint, and production build pass.
+- New UI primitives use shared shadcn/ui components where applicable; material exceptions are explained.
+- Changed business rules and important workflows have tests for expected behavior, relevant boundaries, and failure cases; bug fixes include regression coverage.
+- Tests, TypeScript, lint, formatting, and production build pass.
 
 ## Avoid unnecessary abstraction
 

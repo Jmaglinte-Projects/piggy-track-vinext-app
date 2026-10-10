@@ -55,6 +55,8 @@ JSON, JSONC, and CSS files using the project's Biome configuration.
 
 ## Current scope
 
+On mobile, the workspace sidebar slides in and out with a fading backdrop. The menu buttons animate between menu and close icons using Tailwind transitions. Escape and backdrop taps close the drawer, keyboard focus stays inside while open, and background scrolling is locked. Reduced-motion preferences disable these transitions.
+
 Phase 6 includes email/password authentication, multi-farm workspaces, hashed single-use family invitations, member management, Supabase RLS, repository-backed operational workflows, dedicated Feed management, and batch financial Reports. Reports cover profit, expenses, feed cost, cost per pig, selling weight, weighted price per kilogram, receivables, payments received, and ROI. New Reports and Settings UI use Tailwind CSS utilities. All financial metrics are derived from their underlying transactions. Local demo mode remains available when Supabase is not configured.
 
 See [docs/workspace-permissions.md](docs/workspace-permissions.md) for Owner/Viewer permissions and the required `202610100002_workspace_permissions.sql` migration.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { BatchSelector } from "@/components/batch-selector";
 import { Icon, type IconName } from "@/components/ui/icon";
@@ -46,8 +46,53 @@ export function AppShell() {
   const [page, setPage] = useState<PageName>("Dashboard");
   const [selectedBatchId, setSelectedBatchId] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const data = store.workspace?.data;
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 800px)");
+    const update = () => {
+      setIsMobile(media.matches);
+      if (!media.matches) setMobileMenuOpen(false);
+    };
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileMenuOpen || !isMobile) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    sidebarRef.current
+      ?.querySelector<HTMLButtonElement>(".sidebar-close")
+      ?.focus({ preventScroll: true });
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+      if (event.key !== "Tab") return;
+      const buttons =
+        sidebarRef.current?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)");
+      if (!buttons?.length) return;
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      menuTriggerRef.current?.focus({ preventScroll: true });
+    };
+  }, [mobileMenuOpen, isMobile]);
 
   useEffect(() => {
     if (!data?.batches.length) {
@@ -64,7 +109,12 @@ export function AppShell() {
       setNotice(null);
     } else setNotice(`${item.label} is planned for the next PiggyTrack milestone.`);
     setMobileMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({
+      top: 0,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
   }
 
   if (auth.loading) return <LoadingScreen label="Checking your workspace…" />;
@@ -86,12 +136,23 @@ export function AppShell() {
 
   return (
     <div className="app-frame">
-      <aside className={`sidebar ${mobileMenuOpen ? "sidebar-open" : ""}`}>
+      <aside
+        id="workspace-sidebar"
+        ref={sidebarRef}
+        inert={isMobile && !mobileMenuOpen}
+        aria-hidden={isMobile && !mobileMenuOpen}
+        aria-label="Workspace menu"
+        className={`sidebar [@media(max-width:800px)]:transition-[transform,opacity] [@media(max-width:800px)]:duration-300 [@media(max-width:800px)]:ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+          mobileMenuOpen
+            ? "[@media(max-width:800px)]:[transform:translate3d(0,0,0)] [@media(max-width:800px)]:opacity-100"
+            : "[@media(max-width:800px)]:[transform:translate3d(-102%,0,0)] [@media(max-width:800px)]:opacity-0 [@media(max-width:800px)]:pointer-events-none"
+        }`}
+      >
         <div className="brand-row">
           <button
             className="brand brand-button"
             type="button"
-            onClick={() => setPage("Dashboard")}
+            onClick={() => navigate(navigation[0])}
             aria-label="PiggyTrack home"
           >
             <span className="brand-mark">
@@ -102,14 +163,14 @@ export function AppShell() {
               <small>{store.workspace.farmName}</small>
             </span>
           </button>
-          <button
+          {/* <button
             className="icon-button sidebar-close"
             type="button"
             aria-label="Close menu"
             onClick={() => setMobileMenuOpen(false)}
           >
             <Icon name="close" />
-          </button>
+          </button> */}
         </div>
         <nav aria-label="Main navigation">
           <p className="nav-kicker">Workspace</p>
@@ -149,13 +210,15 @@ export function AppShell() {
         </div>
       </aside>
 
-      {mobileMenuOpen && (
-        <button
-          className="menu-backdrop"
-          aria-label="Close menu"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        className={`fixed inset-0 z-90 border-0 bg-[rgba(23,31,28,0.42)] transition-[opacity,visibility] duration-300 ease-out min-[801px]:hidden motion-reduce:transition-none ${
+          mobileMenuOpen ? "visible opacity-100" : "pointer-events-none invisible opacity-0"
+        }`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
 
       <main className="main-content" id="top">
         <header className="mobile-header">
@@ -168,9 +231,15 @@ export function AppShell() {
           <button
             className="icon-button"
             type="button"
-            aria-label="Open menu"
-            onClick={() => setMobileMenuOpen(true)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="workspace-sidebar"
+            onClick={(event) => {
+              menuTriggerRef.current = event.currentTarget;
+              setMobileMenuOpen((open) => !open);
+            }}
           >
+            {/* <MobileMenuIcon open={mobileMenuOpen} /> */}
             <Icon name="menu" />
           </button>
         </header>
@@ -367,12 +436,32 @@ export function AppShell() {
             <span>{item.label}</span>
           </button>
         ))}
-        <button type="button" onClick={() => setMobileMenuOpen(true)}>
-          <Icon name="menu" />
+        <button
+          type="button"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="workspace-sidebar"
+          onClick={(event) => {
+            menuTriggerRef.current = event.currentTarget;
+            setMobileMenuOpen((open) => !open);
+          }}
+        >
+          <MobileMenuIcon open={mobileMenuOpen} />
           <span>More</span>
         </button>
       </nav>
     </div>
+  );
+}
+
+function MobileMenuIcon({ open }: { open: boolean }) {
+  const lineClass =
+    "absolute left-0 h-0.5 w-5 rounded-full bg-current transition-[translate,rotate,scale,opacity] duration-300 ease-in-out motion-reduce:transition-none";
+  return (
+    <span className="relative block h-5 w-5" aria-hidden="true">
+      <span className={`${lineClass} top-[3px] ${open ? "translate-y-[6px] rotate-45" : ""}`} />
+      <span className={`${lineClass} top-[9px] ${open ? "scale-x-0 opacity-0" : ""}`} />
+      <span className={`${lineClass} top-[15px] ${open ? "-translate-y-[6px] -rotate-45" : ""}`} />
+    </span>
   );
 }
 

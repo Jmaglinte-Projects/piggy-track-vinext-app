@@ -2007,23 +2007,11 @@ svg {
 
 @media (max-width: 800px) {
   .sidebar {
-    transform: translateX(-102%);
     width: min(86vw, 300px);
     box-shadow: 12px 0 45px rgba(22, 35, 30, 0.2);
-    transition: transform 0.25s ease;
-  }
-  .sidebar-open {
-    transform: translateX(0);
   }
   .sidebar-close {
     display: grid;
-  }
-  .menu-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 90;
-    border: 0;
-    background: rgba(23, 31, 28, 0.42);
   }
   .main-content {
     margin-left: 0;

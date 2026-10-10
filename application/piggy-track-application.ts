@@ -1,3 +1,4 @@
+import { WorkspaceAccessError } from "@/application/ports/piggy-track-repository";
 import type { FarmPreferenceStore } from "@/application/ports/farm-preference-store";
 import type {
   BatchInput,
@@ -19,26 +20,37 @@ import type {
  * ports, keeping every workflow testable without React, Supabase, or a DOM.
  */
 export class PiggyTrackApplication {
+  private workspace: WorkspaceSnapshot | null = null;
   constructor(
     private readonly repository: PiggyTrackRepository,
     private readonly farmPreferenceStore: FarmPreferenceStore,
   ) {}
 
   async loadWorkspace(): Promise<WorkspaceSnapshot> {
-    const workspace = await this.repository.loadWorkspace(
-      this.farmPreferenceStore.getPreferredFarmId(),
-    );
+    let workspace: WorkspaceSnapshot;
+    try {
+      workspace = await this.repository.loadWorkspace(
+        this.farmPreferenceStore.getPreferredFarmId(),
+      );
+    } catch (cause) {
+      if (!(cause instanceof WorkspaceAccessError)) throw cause;
+      workspace = await this.repository.loadWorkspace();
+    }
     this.farmPreferenceStore.setPreferredFarmId(workspace.farmId);
+    this.workspace = workspace;
     return workspace;
   }
 
   async reloadWorkspace(): Promise<WorkspaceSnapshot> {
-    return this.repository.loadWorkspace();
+    const workspace = await this.repository.loadWorkspace();
+    this.workspace = workspace;
+    return workspace;
   }
 
   async switchFarm(farmId: string): Promise<WorkspaceSnapshot> {
     const workspace = await this.repository.loadWorkspace(farmId);
     this.farmPreferenceStore.setPreferredFarmId(workspace.farmId);
+    this.workspace = workspace;
     return workspace;
   }
 
@@ -46,10 +58,12 @@ export class PiggyTrackApplication {
     const farmId = await this.repository.acceptFarmInvitation(code);
     const workspace = await this.repository.loadWorkspace(farmId);
     this.farmPreferenceStore.setPreferredFarmId(workspace.farmId);
+    this.workspace = workspace;
     return workspace;
   }
 
   createFarmInvitation(): Promise<FarmInvitation> {
+    this.requireOwner();
     return this.repository.createFarmInvitation();
   }
 
@@ -113,8 +127,14 @@ export class PiggyTrackApplication {
     return this.executeAndReload(() => this.repository.deletePayment(id));
   }
 
+  private requireOwner(): void {
+    if (this.workspace?.farmRole !== "Owner")
+      throw new Error("This workspace is read-only. Only farm owners can modify data.");
+  }
+
   private async executeAndReload(operation: () => Promise<unknown>): Promise<WorkspaceSnapshot> {
+    this.requireOwner();
     await operation();
-    return this.repository.loadWorkspace();
+    return this.reloadWorkspace();
   }
 }

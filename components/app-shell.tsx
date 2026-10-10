@@ -81,6 +81,7 @@ export function AppShell() {
 
   const displayName = auth.user?.email?.split("@")[0] ?? "Demo User";
   const initials = displayName.slice(0, 2).toUpperCase();
+  const canEdit = store.workspace.farmRole === "Owner";
   const currentBatchId = selectedBatchId || data.batches[0]?.id || "";
 
   return (
@@ -191,6 +192,12 @@ export function AppShell() {
             </div>
           )}
 
+          {!canEdit && (
+            <div className="phase-notice" role="status">
+              Viewer access: you can view this farm’s records and reports. Only Owners can make
+              changes.
+            </div>
+          )}
           {page === "Dashboard" && (
             <>
               <div className="page-heading">
@@ -204,8 +211,8 @@ export function AppShell() {
                   type="button"
                   onClick={() => setPage("Expenses")}
                 >
-                  <Icon name="plus" />
-                  Add expense
+                  <Icon name={canEdit ? "plus" : "receipt"} />
+                  {canEdit ? "Add expense" : "View expenses"}
                 </button>
               </div>
               {data.batches.length > 0 ? (
@@ -226,7 +233,7 @@ export function AppShell() {
               ) : (
                 <div className="inline-empty dashboard-empty">
                   <Icon name="batches" />
-                  <h2>Create your first batch</h2>
+                  <h2>{canEdit ? "Create your first batch" : "No batches yet"}</h2>
                   <p>A batch is the starting point for pigs, expenses, and sales.</p>
                   <button
                     className="primary-button"
@@ -234,7 +241,7 @@ export function AppShell() {
                     onClick={() => setPage("Batches")}
                   >
                     <Icon name="plus" />
-                    Create batch
+                    {canEdit ? "Create batch" : "View batches"}
                   </button>
                 </div>
               )}
@@ -242,6 +249,7 @@ export function AppShell() {
           )}
           {page === "Batches" && (
             <BatchesPage
+              canEdit={canEdit}
               data={data}
               saving={store.saving}
               onSave={store.saveBatch}
@@ -250,6 +258,7 @@ export function AppShell() {
           )}
           {page === "Pigs" && currentBatchId && (
             <PigsPage
+              canEdit={canEdit}
               data={data}
               selectedBatchId={currentBatchId}
               onBatchChange={setSelectedBatchId}
@@ -260,6 +269,7 @@ export function AppShell() {
           )}
           {page === "Expenses" && currentBatchId && (
             <ExpensesPage
+              canEdit={canEdit}
               data={data}
               selectedBatchId={currentBatchId}
               onBatchChange={setSelectedBatchId}
@@ -271,6 +281,7 @@ export function AppShell() {
           )}
           {page === "Feed" && currentBatchId && (
             <FeedPage
+              canEdit={canEdit}
               data={data}
               selectedBatchId={currentBatchId}
               onBatchChange={setSelectedBatchId}
@@ -281,6 +292,7 @@ export function AppShell() {
           )}
           {page === "Sales" && currentBatchId && (
             <SalesPage
+              canEdit={canEdit}
               data={data}
               selectedBatchId={currentBatchId}
               onBatchChange={setSelectedBatchId}
@@ -294,6 +306,7 @@ export function AppShell() {
           )}
           {page === "Buyers" && (
             <BuyersPage
+              canEdit={canEdit}
               data={data}
               saving={store.saving}
               onSave={store.saveBuyer}

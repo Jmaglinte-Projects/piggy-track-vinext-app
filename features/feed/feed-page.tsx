@@ -19,6 +19,7 @@ import type { Expense, FeedType, PiggyTrackData } from "@/domain/entities";
 import type { ExpenseInput } from "@/application/ports/piggy-track-repository";
 
 interface FeedPageProps {
+  canEdit: boolean;
   data: PiggyTrackData;
   selectedBatchId: string;
   onBatchChange: (id: string) => void;
@@ -28,6 +29,7 @@ interface FeedPageProps {
 }
 
 export function FeedPage({
+  canEdit,
   data,
   selectedBatchId,
   onBatchChange,
@@ -53,6 +55,7 @@ export function FeedPage({
   return (
     <>
       <PageHeader
+        canEdit={canEdit}
         eyebrow="Feed ledger"
         title="Feed"
         description="Track every sack purchased and understand feed cost for this batch."
@@ -159,14 +162,24 @@ export function FeedPage({
               <div data-label="Total">
                 <strong>{formatCurrency(calculateExpenseAmount(expense))}</strong>
               </div>
-              <div className="row-actions" data-label="Actions">
-                <button type="button" onClick={() => setEditing(expense)}>
-                  Edit
-                </button>
-                <button className="delete-link" type="button" onClick={() => setDeleting(expense)}>
-                  Delete
-                </button>
-              </div>
+              {canEdit ? (
+                <div className="row-actions" data-label="Actions">
+                  <button type="button" onClick={() => setEditing(expense)}>
+                    Edit
+                  </button>
+                  <button
+                    className="delete-link"
+                    type="button"
+                    onClick={() => setDeleting(expense)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ) : (
+                <div className="row-actions" data-label="Actions">
+                  <small>Read only</small>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -179,7 +192,7 @@ export function FeedPage({
         )}
       </section>
 
-      {editing && (
+      {canEdit && editing && (
         <FeedModal
           expense={editing}
           batches={data.batches}
@@ -189,7 +202,7 @@ export function FeedPage({
           onSave={onSave}
         />
       )}
-      {deleting && (
+      {canEdit && deleting && (
         <ConfirmDelete
           itemName={`${deleting.feedType ?? "Feed"} purchase from ${formatDate(deleting.expenseDate)}`}
           saving={saving}

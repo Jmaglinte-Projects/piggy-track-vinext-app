@@ -25,6 +25,7 @@
     "@vitejs/plugin-rsc": "^0.5.35",
     "cf": "1.0.0-beta.3",
     "eslint": "^10.11.0",
+    "supabase": "2.120.0",
     "tailwindcss": "latest",
     "tsx": "4.23.15",
     "typescript": "6.0.2",
@@ -35,12 +36,17 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "test": "node --import tsx --test tests/*.test.ts",
+    "test": "node --import ./tests/register.mjs --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "start": "vite preview",
+    "supabase:login": "supabase login",
+    "supabase:link": "supabase link",
+    "db:migrations": "supabase migration list --linked",
+    "db:migrate:preview": "supabase db push --linked --skip-vault --dry-run",
+    "db:migrate": "supabase db push --linked --skip-vault",
     "deploy:dev": "vinext-cloudflare deploy --env development",
     "deploy:prod": "vinext-cloudflare deploy --env production"
   }

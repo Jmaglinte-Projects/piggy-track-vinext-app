@@ -39,8 +39,6 @@ export function SettingsPage({
   const [error, setError] = useState<string | null>(null);
   const owner = workspace.farmRole === "Owner";
 
-  console.table(workspace);
-
   useEffect(() => {
     setFarmName(workspace.farmName);
     setInvitation(null);
@@ -191,49 +189,51 @@ export function SettingsPage({
             </div>
           </section>
 
-          <section className="rounded-xl border border-[#deded7] bg-[#fffefa] p-5 shadow-sm sm:p-6">
-            <SectionHeading
-              icon="buyers"
-              eyebrow="Family access"
-              title={`Members (${workspace.members.length})`}
-              description="Members can maintain farm records. Only owners can invite or remove people."
-            />
-            <div className="mt-5 divide-y divide-[#ebeae4]">
-              {workspace.members.map((member) => (
-                <div className="flex items-center justify-between gap-4 py-3" key={member.userId}>
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-[#e5ece7] text-[10px] font-extrabold text-[#315c50]">
-                      {initials(member.email)}
-                    </span>
-                    <span className="min-w-0">
-                      <strong className="block truncate text-xs text-[#1f2d29]">
-                        {member.email}
-                      </strong>
-                      <small className="mt-1 block text-[9px] text-[#87908c]">
-                        Joined {formatDate(member.joinedAt.slice(0, 10))}
-                      </small>
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-[8px] font-extrabold uppercase ${member.role === "Owner" ? "bg-[#e8f0eb] text-[#315c50]" : "bg-[#f1eee6] text-[#75674f]"}`}
-                    >
-                      {member.role}
-                    </span>
-                    {owner && member.role === "Member" && (
-                      <button
-                        type="button"
-                        className="min-h-9 rounded-md px-2 text-[9px] font-bold text-[#a1533d] hover:bg-[#f8e8e2]"
-                        onClick={() => setRemoving(member)}
+          {owner && (
+            <section className="rounded-xl border border-[#deded7] bg-[#fffefa] p-5 shadow-sm sm:p-6">
+              <SectionHeading
+                icon="buyers"
+                eyebrow="Family access"
+                title={`Members (${workspace.members.length})`}
+                description="Owners can manage records and access. Viewers can read farm records and reports."
+              />
+              <div className="mt-5 divide-y divide-[#ebeae4]">
+                {workspace.members.map((member) => (
+                  <div className="flex items-center justify-between gap-4 py-3" key={member.userId}>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-[#e5ece7] text-[10px] font-extrabold text-[#315c50]">
+                        {initials(member.email)}
+                      </span>
+                      <span className="min-w-0">
+                        <strong className="block truncate text-xs text-[#1f2d29]">
+                          {member.email}
+                        </strong>
+                        <small className="mt-1 block text-[9px] text-[#87908c]">
+                          Joined {formatDate(member.joinedAt.slice(0, 10))}
+                        </small>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[8px] font-extrabold uppercase ${member.role === "Owner" ? "bg-[#e8f0eb] text-[#315c50]" : "bg-[#f1eee6] text-[#75674f]"}`}
                       >
-                        Remove
-                      </button>
-                    )}
+                        {member.role}
+                      </span>
+                      {owner && member.role === "Viewer" && (
+                        <button
+                          type="button"
+                          className="min-h-9 rounded-md px-2 text-[9px] font-bold text-[#a1533d] hover:bg-[#f8e8e2]"
+                          onClick={() => setRemoving(member)}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         <div className="space-y-5">
@@ -288,7 +288,7 @@ export function SettingsPage({
               icon="batches"
               eyebrow="Join another farm"
               title="Use invitation code"
-              description="Enter the single-use code provided by that farm’s owner."
+              description="Join as a read-only Viewer using the single-use code provided by that farm’s owner."
             />
             <form className="mt-5 space-y-4" onSubmit={joinFarm}>
               <label className="block">
@@ -326,8 +326,9 @@ export function SettingsPage({
               <div>
                 <strong className="text-xs text-[#1f2d29]">Access is protected</strong>
                 <p className="mt-1.5 text-[10px] leading-relaxed text-[#68746f]">
-                  Supabase Row Level Security restricts every farm record to its members. Invitation
-                  codes are stored as one-way hashes and cannot be recovered after creation.
+                  Supabase Row Level Security lets Viewers read farm records and restricts changes
+                  to Owners. Invitation codes are stored as one-way hashes and cannot be recovered
+                  after creation.
                 </p>
               </div>
             </div>

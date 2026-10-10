@@ -16,15 +16,30 @@ type AuditFields = { created_at: string; updated_at: string };
 export interface Database {
   public: {
     Tables: {
+      farm_audit_log: Table<
+        {
+          id: number;
+          farm_id: string;
+          actor_user_id: string | null;
+          table_name: string;
+          record_id: string;
+          action: "INSERT" | "UPDATE" | "DELETE";
+          occurred_at: string;
+          old_data: Json | null;
+          new_data: Json | null;
+        },
+        Record<string, never>,
+        Record<string, never>
+      >;
       farms: Table<
         { id: string; name: string } & AuditFields,
         { id?: string; name: string; created_at?: string; updated_at?: string },
         { name?: string; updated_at?: string }
       >;
       farm_members: Table<
-        { farm_id: string; user_id: string; role: "Owner" | "Member"; created_at: string },
-        { farm_id: string; user_id: string; role: "Owner" | "Member"; created_at?: string },
-        { role?: "Owner" | "Member" }
+        { farm_id: string; user_id: string; role: "Owner" | "Viewer"; created_at: string },
+        { farm_id: string; user_id: string; role: "Owner" | "Viewer"; created_at?: string },
+        { role?: "Owner" | "Viewer" }
       >;
       farm_invitations: Table<
         {
@@ -235,6 +250,11 @@ export interface Database {
     Views: Record<string, never>;
     Functions: {
       reconcile_pig_purchases: { Args: { target_batch_id: string }; Returns: undefined };
+      list_my_farms: {
+        Args: Record<string, never>;
+        Returns: Array<{ id: string; name: string; role: "Owner" | "Viewer" }>;
+      };
+      ensure_farm_workspace: { Args: Record<string, never>; Returns: string };
       create_farm: { Args: { farm_name: string }; Returns: string };
       record_pig_sale: {
         Args: {

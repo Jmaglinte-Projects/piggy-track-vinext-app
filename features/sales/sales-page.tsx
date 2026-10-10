@@ -18,6 +18,7 @@ import type { Payment, PigSale, PiggyTrackData } from "@/domain/entities";
 import type { PaymentInput, SaleInput } from "@/application/ports/piggy-track-repository";
 
 interface SalesPageProps {
+  canEdit: boolean;
   data: PiggyTrackData;
   selectedBatchId: string;
   onBatchChange: (id: string) => void;
@@ -31,6 +32,7 @@ interface SalesPageProps {
 
 export function SalesPage(props: SalesPageProps) {
   const {
+    canEdit,
     data,
     selectedBatchId,
     onBatchChange,
@@ -58,6 +60,7 @@ export function SalesPage(props: SalesPageProps) {
   return (
     <>
       <PageHeader
+        canEdit={canEdit}
         eyebrow="Sales and collections"
         title="Sales"
         description="Record selling weights, buyers, due dates, and partial payments."
@@ -137,30 +140,36 @@ export function SalesPage(props: SalesPageProps) {
                   Balance: <strong>{formatCurrency(balance)}</strong>
                 </span>
               </div>
-              <div className="sale-actions">
-                <div className="row-actions">
-                  <button type="button" onClick={() => setEditingSale(sale)}>
-                    Edit sale
-                  </button>
-                  <button
-                    className="delete-link"
-                    type="button"
-                    onClick={() => setDeletingSale(sale)}
-                  >
-                    Delete
-                  </button>
+              {canEdit ? (
+                <div className="sale-actions">
+                  <div className="row-actions">
+                    <button type="button" onClick={() => setEditingSale(sale)}>
+                      Edit sale
+                    </button>
+                    <button
+                      className="delete-link"
+                      type="button"
+                      onClick={() => setDeletingSale(sale)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  {balance > 0 && (
+                    <button
+                      className="secondary-button small-button"
+                      type="button"
+                      onClick={() => setPaymentSale(sale)}
+                    >
+                      <Icon name="plus" />
+                      Add payment
+                    </button>
+                  )}
                 </div>
-                {balance > 0 && (
-                  <button
-                    className="secondary-button small-button"
-                    type="button"
-                    onClick={() => setPaymentSale(sale)}
-                  >
-                    <Icon name="plus" />
-                    Add payment
-                  </button>
-                )}
-              </div>
+              ) : (
+                <div className="row-actions" data-label="Actions">
+                  <small>Read only</small>
+                </div>
+              )}
               {payments.length > 0 && (
                 <div className="payment-list">
                   <h3>Payments</h3>
@@ -172,13 +181,15 @@ export function SalesPage(props: SalesPageProps) {
                           {formatDate(payment.paymentDate)} · {payment.paymentMethod}
                         </small>
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => void onDeletePayment(payment.id)}
-                        disabled={saving}
-                      >
-                        Remove
-                      </button>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => void onDeletePayment(payment.id)}
+                          disabled={saving}
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -194,7 +205,7 @@ export function SalesPage(props: SalesPageProps) {
           </div>
         )}
       </section>
-      {editingSale && (
+      {canEdit && editingSale && (
         <SaleModal
           sale={editingSale}
           data={data}
@@ -205,7 +216,7 @@ export function SalesPage(props: SalesPageProps) {
           onOpenBuyers={onOpenBuyers}
         />
       )}
-      {paymentSale && (
+      {canEdit && paymentSale && (
         <PaymentModal
           sale={paymentSale}
           outstanding={calculateOutstandingBalance(paymentSale, data.payments)}
@@ -214,7 +225,7 @@ export function SalesPage(props: SalesPageProps) {
           onSave={onSavePayment}
         />
       )}
-      {deletingSale && (
+      {canEdit && deletingSale && (
         <ConfirmDelete
           itemName={`sale for ${data.pigs.find((pig) => pig.id === deletingSale.pigId)?.tagNumber ?? "pig"}`}
           saving={saving}

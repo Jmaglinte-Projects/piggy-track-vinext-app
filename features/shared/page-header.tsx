@@ -1,6 +1,7 @@
 import { Icon } from "@/components/ui/icon";
 
 interface PageHeaderProps {
+  canEdit: boolean;
   eyebrow: string;
   title: string;
   description: string;
@@ -9,6 +10,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({
+  canEdit,
   eyebrow,
   title,
   description,
@@ -22,10 +24,12 @@ export function PageHeader({
         <h1>{title}</h1>
         <p>{description}</p>
       </div>
-      <button className="primary-button" type="button" onClick={onAction}>
-        <Icon name="plus" />
-        {actionLabel}
-      </button>
+      {canEdit && (
+        <button className="primary-button" type="button" onClick={onAction}>
+          <Icon name="plus" />
+          {actionLabel}
+        </button>
+      )}
     </div>
   );
 }

@@ -16,12 +16,25 @@ Without environment variables, PiggyTrack runs in local demo mode and persists c
 ## Connect Supabase
 
 1. Create a Supabase project.
-2. Run the SQL files in `supabase/migrations/` in filename order using the Supabase SQL Editor or CLI.
+2. Link your project and apply pending migrations with the commands below. If you previously used the SQL Editor, follow the migration history instructions first.
 3. Copy `.env.example` to `.env.local`.
 4. Add the project URL and publishable key.
 5. Restart the development server and create your first account.
 
-The first signed-in account automatically creates a farm workspace and becomes its Owner. RLS prevents non-members from accessing that workspace.
+The first signed-in account automatically creates a farm workspace and becomes its Owner. Owners can manage farm data and access. Invited users join as read-only Viewers. RLS prevents non-members from accessing that workspace and blocks Viewer writes.
+
+```bash
+# First-time setup on this computer
+pnpm supabase:login
+pnpm supabase:link --project-ref YOUR_PROJECT_REF
+
+# Review migration history and preview before applying
+pnpm db:migrations
+pnpm db:migrate:preview
+pnpm db:migrate
+```
+
+Replace `YOUR_PROJECT_REF` with the project reference from your Supabase dashboard. These commands target the linked remote database. See [docs/database-migrations.md](docs/database-migrations.md) for setup, existing SQL Editor migration history, and deployment instructions.
 
 ## Quality checks
 
@@ -43,6 +56,8 @@ JSON, JSONC, and CSS files using the project's Biome configuration.
 ## Current scope
 
 Phase 6 includes email/password authentication, multi-farm workspaces, hashed single-use family invitations, member management, Supabase RLS, repository-backed operational workflows, dedicated Feed management, and batch financial Reports. Reports cover profit, expenses, feed cost, cost per pig, selling weight, weighted price per kilogram, receivables, payments received, and ROI. New Reports and Settings UI use Tailwind CSS utilities. All financial metrics are derived from their underlying transactions. Local demo mode remains available when Supabase is not configured.
+
+See [docs/workspace-permissions.md](docs/workspace-permissions.md) for Owner/Viewer permissions and the required `202610100002_workspace_permissions.sql` migration.
 
 See [docs/architecture.md](docs/architecture.md) for the system design and [docs/clean-architecture-guide.md](docs/clean-architecture-guide.md) for layer responsibilities and code-placement guidance.
 

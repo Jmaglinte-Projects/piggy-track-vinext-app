@@ -1,3 +1,4 @@
+import { WorkspaceAccessError } from "@/application/ports/piggy-track-repository";
 import { getSupabaseClient } from "@/infrastructure/supabase/client";
 import type {
   Batch,
@@ -83,33 +84,28 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
 
   async loadWorkspace(requestedFarmId?: string): Promise<WorkspaceSnapshot> {
     const client = getSupabaseClient();
-    let membershipResult = await client.from("farm_members").select("farm_id, role");
-    if (membershipResult.error) fail("Unable to load farm membership", membershipResult.error);
-    if (!membershipResult.data?.length) {
-      const created = await client.rpc("create_farm", { farm_name: "My Piggery" });
+    let farmsResult = await client.rpc("list_my_farms");
+    if (farmsResult.error) fail("Unable to load your farm workspaces", farmsResult.error);
+    if (!farmsResult.data?.length) {
+      const created = await client.rpc("ensure_farm_workspace");
       if (created.error || !created.data)
         fail("Unable to create your farm workspace", created.error);
-      membershipResult = await client.from("farm_members").select("farm_id, role");
-      if (membershipResult.error)
-        fail("Unable to load new farm membership", membershipResult.error);
+      farmsResult = await client.rpc("list_my_farms");
+      if (farmsResult.error) fail("Unable to load your farm workspaces", farmsResult.error);
     }
-    const memberships = membershipResult.data ?? [];
-    const farmIds = memberships.map((membership) => membership.farm_id);
-    const farmsResult = await client.from("farms").select("id, name").in("id", farmIds);
-    if (farmsResult.error) fail("Unable to load farm workspaces", farmsResult.error);
-    const farms: FarmWorkspace[] = memberships.map((membership) => ({
-      id: membership.farm_id,
-      name:
-        farmsResult.data?.find((farm) => farm.id === membership.farm_id)?.name ?? "Farm workspace",
-      role: membership.role,
-    }));
+    const farms: FarmWorkspace[] = Array.from(
+      new Map((farmsResult.data ?? []).map((farm) => [farm.id, farm])).values(),
+    );
     const farmId = farms.some((farm) => farm.id === requestedFarmId)
       ? (requestedFarmId as string)
       : farms.some((farm) => farm.id === this.farmId)
         ? (this.farmId as string)
         : farms[0]?.id;
     if (!farmId) throw new Error("No farm workspace is available.");
+    if (requestedFarmId && !farms.some((farm) => farm.id === requestedFarmId))
+      throw new WorkspaceAccessError();
     this.farmId = farmId;
+    const farmRole = farms.find((farm) => farm.id === farmId)!.role;
 
     const [
       farmResult,
@@ -136,7 +132,9 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
       client.from("buyers").select("*").eq("farm_id", farmId),
       client.from("pig_sales").select("*").eq("farm_id", farmId),
       client.from("payments").select("*").eq("farm_id", farmId),
-      client.rpc("list_farm_members", { target_farm_id: farmId }),
+      farmRole === "Owner"
+        ? client.rpc("list_farm_members", { target_farm_id: farmId })
+        : Promise.resolve({ data: [], error: null }),
     ]);
     const firstError = [
       farmResult,
@@ -190,7 +188,7 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
     return {
       farmId,
       farmName: farmResult.data?.name ?? "My Piggery",
-      farmRole: farms.find((farm) => farm.id === farmId)?.role ?? "Member",
+      farmRole,
       farms,
       members,
       data,
@@ -253,7 +251,13 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
       notes: input.notes,
     };
     const result = id
-      ? await client.from("batches").update(payload).eq("id", id).select().single()
+      ? await client
+          .from("batches")
+          .update(payload)
+          .eq("id", id)
+          .eq("farm_id", this.requireFarmId())
+          .select()
+          .single()
       : await client
           .from("batches")
           .insert({ ...payload, farm_id: this.requireFarmId() })
@@ -286,7 +290,13 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
       notes: input.notes,
     };
     const result = id
-      ? await client.from("pigs").update(payload).eq("id", id).select().single()
+      ? await client
+          .from("pigs")
+          .update(payload)
+          .eq("id", id)
+          .eq("farm_id", this.requireFarmId())
+          .select()
+          .single()
       : await client
           .from("pigs")
           .insert({ ...payload, farm_id: this.requireFarmId() })
@@ -314,7 +324,13 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
       feed_type: input.category === "Feed" ? (input.feedType ?? null) : null,
     };
     const result = id
-      ? await client.from("expenses").update(payload).eq("id", id).select().single()
+      ? await client
+          .from("expenses")
+          .update(payload)
+          .eq("id", id)
+          .eq("farm_id", this.requireFarmId())
+          .select()
+          .single()
       : await client
           .from("expenses")
           .insert({ ...payload, farm_id: this.requireFarmId() })
@@ -336,7 +352,13 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
       notes: input.notes,
     };
     const result = id
-      ? await client.from("buyers").update(payload).eq("id", id).select().single()
+      ? await client
+          .from("buyers")
+          .update(payload)
+          .eq("id", id)
+          .eq("farm_id", this.requireFarmId())
+          .select()
+          .single()
       : await client
           .from("buyers")
           .insert({ ...payload, farm_id: this.requireFarmId() })
@@ -431,7 +453,13 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
     id: string,
     message: string,
   ): Promise<void> {
-    const result = await getSupabaseClient().from(table).delete().eq("id", id);
-    if (result.error) fail(message, result.error);
+    const result = await getSupabaseClient()
+      .from(table)
+      .delete()
+      .eq("id", id)
+      .eq("farm_id", this.requireFarmId())
+      .select("id")
+      .single();
+    if (result.error || !result.data) fail(message, result.error);
   }
 }

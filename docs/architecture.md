@@ -40,9 +40,9 @@ batches 1 ─── * pigs 1 ─── 0..1 pig_sales * ─── 1 buyers
    └──── * expenses          └──── * payments
 ```
 
-Every business table also belongs to a `farm`. Users access farms through `farm_members`, with an `Owner` or `Member` role. Owners manage membership; both roles can maintain operational records. Row Level Security checks farm membership on every exposed table.
+Every business table also belongs to a `farm`. Users access farms through `farm_members`, with an `Owner` or `Viewer` role. Owners manage membership and write operational records; Viewers can only read farm records and reports. Row Level Security enforces membership for reads and ownership for writes on every exposed business table. Sales, payment, and purchase-reconciliation functions also check ownership. Direct client membership writes are revoked.
 
-Users may belong to multiple farms and keep an explicit preferred workspace in local browser state. Invitation codes are single-use and expire after seven days. Only a SHA-256 hash is persisted in `farm_invitations`; the raw code is returned once to the owner. Accepting a code adds a `Member` relationship without modifying or deleting the user’s existing farms.
+Users may belong to multiple farms and keep an explicit preferred workspace in local browser state. Invitation codes are single-use and expire after seven days. Only a SHA-256 hash is persisted in `farm_invitations`; the raw code is returned once to the owner. Accepting a code adds a read-only `Viewer` relationship without modifying or deleting the user’s existing farms.
 
 ### Tables
 
@@ -81,3 +81,5 @@ Sale writes use database functions so saving a sale and changing the pig to `Sol
 ## Runtime repository
 
 The UI depends on `PiggyTrackRepository`, not directly on Supabase. With Supabase environment variables, the repository uses authenticated cloud tables. Without them, it uses browser storage and realistic demo records. This keeps components testable and makes the unconfigured development experience useful.
+
+Workspace listings use only the signed-in user’s own membership. First-workspace creation is idempotent under a per-user transaction lock. Financial and membership changes produce protected Owner-readable audit entries. See [workspace permissions](workspace-permissions.md) for the role matrix, enforcement details, and rollout steps.

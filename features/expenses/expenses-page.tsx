@@ -13,6 +13,7 @@ import type { Expense, ExpenseCategory, FeedType, PiggyTrackData } from "@/domai
 import type { ExpenseInput } from "@/application/ports/piggy-track-repository";
 
 interface ExpensesPageProps {
+  canEdit: boolean;
   data: PiggyTrackData;
   selectedBatchId: string;
   onBatchChange: (id: string) => void;
@@ -23,6 +24,7 @@ interface ExpensesPageProps {
 }
 
 export function ExpensesPage({
+  canEdit,
   data,
   selectedBatchId,
   onBatchChange,
@@ -61,6 +63,7 @@ export function ExpensesPage({
   return (
     <>
       <PageHeader
+        canEdit={canEdit}
         eyebrow="Financial ledger"
         title="Expenses"
         description={
@@ -83,17 +86,19 @@ export function ExpensesPage({
             This batch uses manual Piglets expenses. Review them before enabling automatic purchase
             costs.
           </p>
-          <button
-            type="button"
-            className="secondary-button"
-            disabled={saving}
-            onClick={() => {
-              setReviewError(null);
-              setReviewing(true);
-            }}
-          >
-            Review purchase costs
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={saving}
+              onClick={() => {
+                setReviewError(null);
+                setReviewing(true);
+              }}
+            >
+              Review purchase costs
+            </button>
+          )}
         </div>
       )}
       <div className="expense-overview">
@@ -162,24 +167,30 @@ export function ExpensesPage({
               <div data-label="Amount">
                 <strong>{formatCurrency(calculateExpenseAmount(expense))}</strong>
               </div>
-              <div className="row-actions" data-label="Actions">
-                {expense.pigId || expense.superseded ? (
-                  <small>{expense.pigId ? "Edit purchase in Pigs" : "Purchase history"}</small>
-                ) : (
-                  <>
-                    <button type="button" onClick={() => setEditing(expense)}>
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="delete-link"
-                      onClick={() => setDeleting(expense)}
-                    >
-                      Delete
-                    </button>
-                  </>
-                )}
-              </div>
+              {canEdit ? (
+                <div className="row-actions" data-label="Actions">
+                  {expense.pigId || expense.superseded ? (
+                    <small>{expense.pigId ? "Edit purchase in Pigs" : "Purchase history"}</small>
+                  ) : (
+                    <>
+                      <button type="button" onClick={() => setEditing(expense)}>
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="delete-link"
+                        onClick={() => setDeleting(expense)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="row-actions" data-label="Actions">
+                  <small>Read only</small>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -190,7 +201,7 @@ export function ExpensesPage({
           </div>
         )}
       </section>
-      {reviewing && batch && (
+      {canEdit && reviewing && batch && (
         <Modal
           title="Review purchase costs"
           description={`Reconcile ${batch.name}`}
@@ -256,7 +267,7 @@ export function ExpensesPage({
           </div>
         </Modal>
       )}
-      {editing && (
+      {canEdit && editing && (
         <ExpenseModal
           expense={editing}
           batches={data.batches}
@@ -266,7 +277,7 @@ export function ExpensesPage({
           onSave={onSave}
         />
       )}
-      {deleting && (
+      {canEdit && deleting && (
         <ConfirmDelete
           itemName={deleting.description}
           saving={saving}

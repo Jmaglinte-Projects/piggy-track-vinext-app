@@ -12,13 +12,14 @@ import type { Batch, BatchStatus, PiggyTrackData } from "@/domain/entities";
 import type { BatchInput } from "@/application/ports/piggy-track-repository";
 
 interface BatchesPageProps {
+  canEdit: boolean;
   data: PiggyTrackData;
   saving: boolean;
   onSave: (input: BatchInput, id?: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
-export function BatchesPage({ data, saving, onSave, onDelete }: BatchesPageProps) {
+export function BatchesPage({ canEdit, data, saving, onSave, onDelete }: BatchesPageProps) {
   const [editing, setEditing] = useState<Batch | "new" | null>(null);
   const [deleting, setDeleting] = useState<Batch | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -47,6 +48,7 @@ export function BatchesPage({ data, saving, onSave, onDelete }: BatchesPageProps
   return (
     <>
       <PageHeader
+        canEdit={canEdit}
         eyebrow="Raising cycles"
         title="Batches"
         description="Organize pigs and transactions by raising cycle."
@@ -63,23 +65,29 @@ export function BatchesPage({ data, saving, onSave, onDelete }: BatchesPageProps
                 <span className={`status-pill status-${batch.status.toLowerCase()}`}>
                   {batch.status}
                 </span>
-                <div className="row-actions">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(batch)}
-                    aria-label={`Edit ${batch.name}`}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="delete-link"
-                    onClick={() => setDeleting(batch)}
-                    aria-label={`Delete ${batch.name}`}
-                  >
-                    Delete
-                  </button>
-                </div>
+                {canEdit ? (
+                  <div className="row-actions">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(batch)}
+                      aria-label={`Edit ${batch.name}`}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="delete-link"
+                      onClick={() => setDeleting(batch)}
+                      aria-label={`Delete ${batch.name}`}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ) : (
+                  <div className="row-actions" data-label="Actions">
+                    <small>Read only</small>
+                  </div>
+                )}
               </div>
               <h2>{batch.name}</h2>
               <p>{batch.notes || "No notes added."}</p>
@@ -115,7 +123,7 @@ export function BatchesPage({ data, saving, onSave, onDelete }: BatchesPageProps
           </div>
         )}
       </section>
-      {editing && (
+      {canEdit && editing && (
         <Modal
           title={editing === "new" ? "Create batch" : "Edit batch"}
           description="A batch represents one complete pig-raising cycle."
@@ -183,7 +191,7 @@ export function BatchesPage({ data, saving, onSave, onDelete }: BatchesPageProps
           </form>
         </Modal>
       )}
-      {deleting && (
+      {canEdit && deleting && (
         <ConfirmDelete
           itemName={deleting.name}
           saving={saving}

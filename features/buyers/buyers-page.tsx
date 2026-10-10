@@ -9,13 +9,14 @@ import type { Buyer, PiggyTrackData } from "@/domain/entities";
 import type { BuyerInput } from "@/application/ports/piggy-track-repository";
 
 interface BuyersPageProps {
+  canEdit: boolean;
   data: PiggyTrackData;
   saving: boolean;
   onSave: (input: BuyerInput, id?: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
-export function BuyersPage({ data, saving, onSave, onDelete }: BuyersPageProps) {
+export function BuyersPage({ canEdit, data, saving, onSave, onDelete }: BuyersPageProps) {
   const [editing, setEditing] = useState<Buyer | "new" | null>(null);
   const [deleting, setDeleting] = useState<Buyer | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +41,7 @@ export function BuyersPage({ data, saving, onSave, onDelete }: BuyersPageProps) 
   return (
     <>
       <PageHeader
+        canEdit={canEdit}
         eyebrow="Customer records"
         title="Buyers"
         description="Keep buyer details connected to every pig sale."
@@ -55,14 +57,24 @@ export function BuyersPage({ data, saving, onSave, onDelete }: BuyersPageProps) 
                 <span className="buyer-icon">
                   <Icon name="buyers" />
                 </span>
-                <div className="row-actions">
-                  <button type="button" onClick={() => setEditing(buyer)}>
-                    Edit
-                  </button>
-                  <button className="delete-link" type="button" onClick={() => setDeleting(buyer)}>
-                    Delete
-                  </button>
-                </div>
+                {canEdit ? (
+                  <div className="row-actions">
+                    <button type="button" onClick={() => setEditing(buyer)}>
+                      Edit
+                    </button>
+                    <button
+                      className="delete-link"
+                      type="button"
+                      onClick={() => setDeleting(buyer)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ) : (
+                  <div className="row-actions" data-label="Actions">
+                    <small>Read only</small>
+                  </div>
+                )}
               </div>
               <h2>{buyer.name}</h2>
               <p>{buyer.contactInformation || "No contact information"}</p>
@@ -83,7 +95,7 @@ export function BuyersPage({ data, saving, onSave, onDelete }: BuyersPageProps) 
           </div>
         )}
       </section>
-      {editing && (
+      {canEdit && editing && (
         <Modal
           title={editing === "new" ? "Add buyer" : "Edit buyer"}
           description="Contact details are optional and visible only to farm members."
@@ -129,7 +141,7 @@ export function BuyersPage({ data, saving, onSave, onDelete }: BuyersPageProps) 
           </form>
         </Modal>
       )}
-      {deleting && (
+      {canEdit && deleting && (
         <ConfirmDelete
           itemName={deleting.name}
           saving={saving}

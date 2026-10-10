@@ -8,6 +8,13 @@ import type {
   PiggyTrackData,
 } from "@/domain/entities";
 
+export class WorkspaceAccessError extends Error {
+  constructor() {
+    super("Farm workspace is no longer available to your account.");
+    this.name = "WorkspaceAccessError";
+  }
+}
+
 export interface WorkspaceSnapshot {
   farmId: string;
   farmName: string;
@@ -17,7 +24,7 @@ export interface WorkspaceSnapshot {
   data: PiggyTrackData;
 }
 
-export type FarmRole = "Owner" | "Member";
+export type FarmRole = "Owner" | "Viewer";
 export interface FarmWorkspace {
   id: string;
   name: string;

@@ -12,6 +12,7 @@ import type { Pig, PigStatus, PiggyTrackData } from "@/domain/entities";
 import type { PigInput } from "@/application/ports/piggy-track-repository";
 
 interface PigsPageProps {
+  canEdit: boolean;
   data: PiggyTrackData;
   selectedBatchId: string;
   onBatchChange: (id: string) => void;
@@ -21,6 +22,7 @@ interface PigsPageProps {
 }
 
 export function PigsPage({
+  canEdit,
   data,
   selectedBatchId,
   onBatchChange,
@@ -66,6 +68,7 @@ export function PigsPage({
   return (
     <>
       <PageHeader
+        canEdit={canEdit}
         eyebrow="Herd records"
         title="Pigs"
         description="Track each pig from purchase through sale."
@@ -132,18 +135,24 @@ export function PigsPage({
                   {pig.status}
                 </span>
               </div>
-              <div className="row-actions" data-label="Actions">
-                <button type="button" onClick={() => setEditing(pig)}>
-                  Edit
-                </button>
-                {data.expenses.some((expense) => expense.pigId === pig.id) ? (
-                  <small>Use Removed to retain cost</small>
-                ) : (
-                  <button type="button" className="delete-link" onClick={() => setDeleting(pig)}>
-                    Delete
+              {canEdit ? (
+                <div className="row-actions" data-label="Actions">
+                  <button type="button" onClick={() => setEditing(pig)}>
+                    Edit
                   </button>
-                )}
-              </div>
+                  {data.expenses.some((expense) => expense.pigId === pig.id) ? (
+                    <small>Use Removed to retain cost</small>
+                  ) : (
+                    <button type="button" className="delete-link" onClick={() => setDeleting(pig)}>
+                      Delete
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="row-actions" data-label="Actions">
+                  <small>Read only</small>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -154,7 +163,7 @@ export function PigsPage({
           </div>
         )}
       </section>
-      {editing && (
+      {canEdit && editing && (
         <Modal
           title={editing === "new" ? "Add pig" : `Edit ${editing.tagNumber}`}
           description="Purchase price is included in this batch’s expenses automatically."
@@ -255,7 +264,7 @@ export function PigsPage({
           </form>
         </Modal>
       )}
-      {deleting && (
+      {canEdit && deleting && (
         <ConfirmDelete
           itemName={deleting.tagNumber}
           saving={saving}

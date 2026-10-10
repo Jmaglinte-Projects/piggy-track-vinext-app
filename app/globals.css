@@ -2199,3 +2199,45 @@ svg {
     transition: none !important;
   }
 }
+
+.calendar-nav-button {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+.calendar-nav-button:hover {
+  background: #e5ece7;
+}
+.calendar-nav-button:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
+}
+.calendar-nav-button:disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+.calendar-nav-button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.date-picker-trigger {
+  justify-content: space-between;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 450;
+}
+.calendar-day-button {
+  font-size: 14px;
+  font-weight: 400;
+}
+.calendar-day-button[data-selected="true"] {
+  background: var(--forest);
+  color: white;
+}

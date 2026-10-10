@@ -83,7 +83,17 @@ export interface Payment {
   notes: string;
 }
 
+export interface FarmInvestment {
+  id: string;
+  name: string;
+  category: "Construction" | "Water Systems" | "Fencing" | "Equipment" | "Other";
+  amount: number;
+  investmentDate: string;
+  notes: string;
+}
+
 export interface PiggyTrackData {
+  investments: FarmInvestment[];
   batches: Batch[];
   pigs: Pig[];
   expenses: Expense[];

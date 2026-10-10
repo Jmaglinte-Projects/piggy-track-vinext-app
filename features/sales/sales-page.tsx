@@ -1,5 +1,6 @@
 "use client";
 
+import { DatePicker } from "@/components/ui/date-picker";
 import { useMemo, useState } from "react";
 import { BatchSelector } from "@/components/batch-selector";
 import { Icon } from "@/components/ui/icon";
@@ -394,18 +395,18 @@ function SaleModal({
         <div className="form-grid">
           <label>
             Sale date
-            <input
+            <DatePicker
               name="saleDate"
-              type="date"
+              ariaLabel="Sale date"
               required
               defaultValue={existing?.saleDate ?? new Date().toISOString().slice(0, 10)}
             />
           </label>
           <label>
             Payment due date
-            <input
+            <DatePicker
               name="paymentDueDate"
-              type="date"
+              ariaLabel="Payment due date"
               required
               defaultValue={existing?.paymentDueDate ?? new Date().toISOString().slice(0, 10)}
             />
@@ -482,9 +483,9 @@ function PaymentModal({
         <div className="form-grid">
           <label>
             Payment date
-            <input
+            <DatePicker
               name="paymentDate"
-              type="date"
+              ariaLabel="Payment date"
               required
               defaultValue={new Date().toISOString().slice(0, 10)}
             />

@@ -26,7 +26,7 @@ test("workspace permission migration enforces roles, isolates farms, and records
     const directory = new URL("../supabase/migrations/", import.meta.url);
     const migrations = (await readdir(directory)).filter((file) => file.endsWith(".sql")).sort();
     for (const file of migrations.filter(
-      (file) => file !== "202610100002_workspace_permissions.sql",
+      (file) => file < "202610100002_workspace_permissions.sql",
     )) {
       await db.exec(await readFile(new URL(file, directory), "utf8"));
     }
@@ -39,6 +39,11 @@ test("workspace permission migration enforces roles, isolates farms, and records
     await db.exec(
       await readFile(new URL("202610100002_workspace_permissions.sql", directory), "utf8"),
     );
+    for (const file of migrations.filter(
+      (file) => file > "202610100002_workspace_permissions.sql",
+    )) {
+      await db.exec(await readFile(new URL(file, directory), "utf8"));
+    }
     const signIn = (id: string) =>
       db.exec(`set role authenticated; set request.jwt.claim.sub = '${id}';`);
     await signIn(owner);

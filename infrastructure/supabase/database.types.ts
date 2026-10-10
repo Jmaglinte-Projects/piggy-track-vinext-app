@@ -31,6 +31,33 @@ export interface Database {
         Record<string, never>,
         Record<string, never>
       >;
+      farm_investments: Table<
+        {
+          id: string;
+          farm_id: string;
+          name: string;
+          category: string;
+          amount: number;
+          investment_date: string;
+          notes: string;
+        } & AuditFields,
+        {
+          id?: string;
+          farm_id: string;
+          name: string;
+          category: string;
+          amount: number;
+          investment_date: string;
+          notes?: string;
+        },
+        {
+          name?: string;
+          category?: string;
+          amount?: number;
+          investment_date?: string;
+          notes?: string;
+        }
+      >;
       farms: Table<
         { id: string; name: string } & AuditFields,
         { id?: string; name: string; created_at?: string; updated_at?: string },

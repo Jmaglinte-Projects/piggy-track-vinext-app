@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { InvestmentsPage } from "@/features/investments/investments-page";
+import { InvestmentSummary } from "@/features/investments/investment-summary";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { BatchSelector } from "@/components/batch-selector";
 import { Icon, type IconName } from "@/components/ui/icon";
@@ -20,6 +22,7 @@ type PageName =
   | "Dashboard"
   | "Batches"
   | "Pigs"
+  | "Farm Investments"
   | "Expenses"
   | "Feed"
   | "Sales"
@@ -35,6 +38,7 @@ const navigation: { label: PageName; icon: IconName; enabled: boolean }[] = [
   { label: "Feed", icon: "feed", enabled: true },
   { label: "Sales", icon: "sales", enabled: true },
   { label: "Buyers", icon: "buyers", enabled: true },
+  { label: "Farm Investments", icon: "expenses", enabled: true },
   { label: "Reports", icon: "reports", enabled: true },
   { label: "Settings", icon: "settings", enabled: true },
 ];
@@ -284,6 +288,10 @@ export function AppShell() {
                   {canEdit ? "Add expense" : "View expenses"}
                 </button>
               </div>
+              <InvestmentSummary
+                investments={data.investments}
+                onOpen={() => setPage("Farm Investments")}
+              />
               {data.batches.length > 0 ? (
                 <>
                   <BatchSelector
@@ -382,7 +390,17 @@ export function AppShell() {
               onDelete={store.deleteBuyer}
             />
           )}
-          {page === "Reports" && currentBatchId && (
+          {page === "Farm Investments" && (
+            <InvestmentsPage
+              canEdit={canEdit}
+              data={data}
+              saving={store.saving}
+              onSave={store.saveInvestment}
+              onDelete={store.deleteInvestment}
+            />
+          )}
+          {page === "Reports" && <InvestmentSummary investments={data.investments} details />}
+          {page === "Reports" && (
             <ReportsPage
               data={data}
               selectedBatchId={currentBatchId}
@@ -401,16 +419,12 @@ export function AppShell() {
               onRemoveMember={store.removeFarmMember}
             />
           )}
-          {(page === "Pigs" ||
-            page === "Expenses" ||
-            page === "Feed" ||
-            page === "Sales" ||
-            page === "Reports") &&
+          {(page === "Pigs" || page === "Expenses" || page === "Feed" || page === "Sales") &&
             !currentBatchId && (
               <div className="inline-empty dashboard-empty">
                 <Icon name="batches" />
                 <h2>Create a batch first</h2>
-                <p>Pigs, expenses, feed, sales, and reports must belong to a batch.</p>
+                <p>Pigs, expenses, feed, and sales must belong to a batch.</p>
                 <button className="primary-button" type="button" onClick={() => setPage("Batches")}>
                   Go to batches
                 </button>

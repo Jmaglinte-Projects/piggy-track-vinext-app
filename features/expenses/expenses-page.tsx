@@ -1,5 +1,6 @@
 "use client";
 
+import { DatePicker } from "@/components/ui/date-picker";
 import { useMemo, useState } from "react";
 import { BatchSelector } from "@/components/batch-selector";
 import { AppSelect, selectOptions } from "@/components/ui/select";
@@ -448,9 +449,9 @@ function ExpenseModal({
         </div>
         <label>
           Expense date
-          <input
+          <DatePicker
             name="expenseDate"
-            type="date"
+            ariaLabel="Expense date"
             required
             defaultValue={
               expense === "new" ? new Date().toISOString().slice(0, 10) : expense.expenseDate

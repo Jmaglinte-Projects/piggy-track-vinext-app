@@ -40,6 +40,15 @@ test("application blocks every Viewer mutation and rechecks role after switching
     () => app.deletePig("id"),
     () => app.saveExpense(mockData.expenses[0]),
     () => app.deleteExpense("id"),
+    () =>
+      app.saveInvestment({
+        name: "Pigpen",
+        category: "Construction",
+        amount: 100000,
+        investmentDate: "2026-10-10",
+        notes: "",
+      }),
+    () => app.deleteInvestment("id"),
     () => app.saveBuyer(mockData.buyers[0]),
     () => app.deleteBuyer("id"),
     () => app.saveSale(mockData.sales[0]),

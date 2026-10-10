@@ -43,7 +43,9 @@ The preview prints which migrations would run without applying them. It does not
 
 Both push scripts explicitly use `--linked` and `--skip-vault` to target the selected remote database and avoid updating Vault secrets from configuration. They do not include seeds or custom roles, reset the database, or automatically answer confirmation prompts.
 
-For this release, apply pending migrations through `202610100002_workspace_permissions.sql` before deploying the matching application. This includes pig purchase accounting when it is still pending. Verify Owner writes, Viewer read-only access, unique workspace cards, and financial totals afterward; see [workspace-permissions.md](workspace-permissions.md).
+For this release, apply pending migrations through `202610100003_farm_investments.sql` before deploying the matching application. This includes pig purchase accounting when it is still pending. Verify Owner writes, Viewer read-only access, unique workspace cards, and financial totals afterward; see [workspace-permissions.md](workspace-permissions.md).
+
+The Farm Investments migration adds a separate farm-owned ledger, Owner-only writes, member reads, and audit history. Apply it before deploying this application version: workspace loading now reads `farm_investments`. It does not move existing Pig House Repair expenses or change batch totals. Record new setup and equipment costs through Farm Investments; existing batch records remain unchanged. Verify adding an investment before the first batch, editing its amount, and viewing the separate dashboard and Reports totals.
 
 If a push fails, inspect the error and current migration history before retrying. Do not use migration repair to hide a failed or partly applied change. Applying a migration changes the live database; reverting application code does not reverse the SQL. Use your environment's backup/recovery process or a reviewed follow-up migration if a database correction is required.
 

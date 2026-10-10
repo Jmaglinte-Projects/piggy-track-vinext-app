@@ -1,9 +1,11 @@
+import { validateInvestment } from "@/domain/investments";
 import { WorkspaceAccessError } from "@/application/ports/piggy-track-repository";
 import { getSupabaseClient } from "@/infrastructure/supabase/client";
 import type {
   Batch,
   Buyer,
   Expense,
+  FarmInvestment,
   ExpenseCategory,
   FeedType,
   Payment,
@@ -16,6 +18,7 @@ import type {
   BatchInput,
   BuyerInput,
   ExpenseInput,
+  InvestmentInput,
   FarmInvitation,
   FarmMember,
   FarmRole,
@@ -33,6 +36,19 @@ type ExpenseRow = Database["public"]["Tables"]["expenses"]["Row"];
 
 function fail(message: string, error: { message: string } | null): never {
   throw new Error(error ? `${message}: ${error.message}` : message);
+}
+
+function mapInvestment(
+  row: Database["public"]["Tables"]["farm_investments"]["Row"],
+): FarmInvestment {
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category as FarmInvestment["category"],
+    amount: Number(row.amount),
+    investmentDate: row.investment_date,
+    notes: row.notes,
+  };
 }
 
 function mapBatch(row: BatchRow): Batch {
@@ -116,6 +132,7 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
       salesResult,
       paymentsResult,
       membersResult,
+      investmentsResult,
     ] = await Promise.all([
       client.from("farms").select("*").eq("id", farmId).single(),
       client
@@ -135,6 +152,11 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
       farmRole === "Owner"
         ? client.rpc("list_farm_members", { target_farm_id: farmId })
         : Promise.resolve({ data: [], error: null }),
+      client
+        .from("farm_investments")
+        .select("*")
+        .eq("farm_id", farmId)
+        .order("investment_date", { ascending: false }),
     ]);
     const firstError = [
       farmResult,
@@ -145,10 +167,12 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
       salesResult,
       paymentsResult,
       membersResult,
+      investmentsResult,
     ].find((result) => result.error)?.error;
     if (firstError) fail("Unable to load farm records", firstError);
 
     const data: PiggyTrackData = {
+      investments: (investmentsResult.data ?? []).map(mapInvestment),
       batches: (batchesResult.data ?? []).map(mapBatch),
       pigs: (pigsResult.data ?? []).map(mapPig),
       expenses: (expensesResult.data ?? []).map(mapExpense),
@@ -344,6 +368,37 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
     await this.remove("expenses", id, "Unable to delete expense");
   }
 
+  async saveInvestment(input: InvestmentInput, id?: string): Promise<FarmInvestment> {
+    validateInvestment(input);
+    const client = getSupabaseClient();
+    const payload = {
+      name: input.name,
+      category: input.category,
+      amount: input.amount,
+      investment_date: input.investmentDate,
+      notes: input.notes,
+    };
+    const result = id
+      ? await client
+          .from("farm_investments")
+          .update(payload)
+          .eq("id", id)
+          .eq("farm_id", this.requireFarmId())
+          .select()
+          .single()
+      : await client
+          .from("farm_investments")
+          .insert({ ...payload, farm_id: this.requireFarmId() })
+          .select()
+          .single();
+    if (result.error || !result.data) fail("Unable to save investment", result.error);
+    return mapInvestment(result.data);
+  }
+
+  async deleteInvestment(id: string): Promise<void> {
+    await this.remove("farm_investments", id, "Unable to delete investment");
+  }
+
   async saveBuyer(input: BuyerInput, id?: string): Promise<Buyer> {
     const client = getSupabaseClient();
     const payload = {
@@ -449,7 +504,7 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
   }
 
   private async remove(
-    table: "batches" | "pigs" | "expenses" | "buyers" | "payments",
+    table: "farm_investments" | "batches" | "pigs" | "expenses" | "buyers" | "payments",
     id: string,
     message: string,
   ): Promise<void> {

@@ -172,7 +172,7 @@ export function SettingsPage({
                   type="button"
                   onClick={() => void onSwitchFarm(farm.id)}
                   disabled={farm.id === workspace.farmId || saving}
-                  className={`rounded-lg border p-4 text-left transition ${farm.id === workspace.farmId ? "border-[#87a396] bg-[#e8f0eb]" : "border-[#deded7] bg-white hover:border-[#aebdb5]"}`}
+                  className={`rounded-lg cursor-pointer border p-4 text-left transition ${farm.id === workspace.farmId ? "border-[#87a396] bg-[#e8f0eb]" : "border-[#deded7] bg-white hover:border-[#aebdb5]"}`}
                   key={farm.id}
                 >
                   <span className="flex items-center justify-between gap-3">

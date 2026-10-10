@@ -1,6 +1,7 @@
 import type { PiggyTrackData } from "@/domain/entities";
 
 export const mockData: PiggyTrackData = {
+  investments: [],
   batches: [
     {
       id: "batch-tabeki-2026",

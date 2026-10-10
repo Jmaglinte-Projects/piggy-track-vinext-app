@@ -1,5 +1,6 @@
 "use client";
 
+import { DatePicker } from "@/components/ui/date-picker";
 import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { AppSelect, selectOptions } from "@/components/ui/select";
@@ -144,9 +145,9 @@ export function BatchesPage({ canEdit, data, saving, onSave, onDelete }: Batches
             <div className="form-grid">
               <label>
                 Start date
-                <input
+                <DatePicker
                   name="startDate"
-                  type="date"
+                  ariaLabel="Start date"
                   required
                   defaultValue={
                     editing === "new" ? new Date().toISOString().slice(0, 10) : editing.startDate
@@ -155,9 +156,9 @@ export function BatchesPage({ canEdit, data, saving, onSave, onDelete }: Batches
               </label>
               <label>
                 End date
-                <input
+                <DatePicker
                   name="endDate"
-                  type="date"
+                  ariaLabel="End date"
                   defaultValue={editing === "new" ? "" : (editing.endDate ?? "")}
                 />
               </label>

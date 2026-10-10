@@ -1,9 +1,11 @@
+import { validateInvestment } from "@/domain/investments";
 import { mockData } from "@/infrastructure/local/mock-data";
 import { calculateOutstandingBalance } from "@/domain/calculations";
 import type {
   Batch,
   Buyer,
   Expense,
+  FarmInvestment,
   Payment,
   Pig,
   PigSale,
@@ -13,6 +15,7 @@ import type {
   BatchInput,
   BuyerInput,
   ExpenseInput,
+  InvestmentInput,
   FarmInvitation,
   PaymentInput,
   PigInput,
@@ -62,6 +65,7 @@ function readData(): PiggyTrackData {
   } catch {
     data = structuredClone(mockData);
   }
+  data.investments ??= [];
   for (const batch of data.batches) {
     if (batch.purchaseCostsReconciled === undefined) {
       batch.purchaseCostsReconciled = !data.expenses.some(
@@ -222,6 +226,26 @@ export class LocalPiggyTrackRepository implements PiggyTrackRepository {
     if (expense?.pigId || expense?.superseded)
       throw new Error("Purchase history is protected. Edit the pig's purchase price instead.");
     data.expenses = data.expenses.filter((item) => item.id !== id);
+    writeData(data);
+  }
+
+  async saveInvestment(input: InvestmentInput, id?: string): Promise<FarmInvestment> {
+    validateInvestment(input);
+    const data = readData();
+    if (id && !data.investments.some((item) => item.id === id))
+      throw new Error("Investment not found.");
+    const investment = { ...input, id: id ?? newId("investment") };
+    data.investments = id
+      ? data.investments.map((item) => (item.id === id ? investment : item))
+      : [investment, ...data.investments];
+    writeData(data);
+    return investment;
+  }
+
+  async deleteInvestment(id: string): Promise<void> {
+    const data = readData();
+    if (!data.investments.some((item) => item.id === id)) throw new Error("Investment not found.");
+    data.investments = data.investments.filter((item) => item.id !== id);
     writeData(data);
   }
 

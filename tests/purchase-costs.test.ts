@@ -48,7 +48,15 @@ function repository(data: PiggyTrackData) {
   return new LocalPiggyTrackRepository();
 }
 function empty(): PiggyTrackData {
-  return { batches: [{ ...batch }], pigs: [], expenses: [], buyers: [], sales: [], payments: [] };
+  return {
+    investments: [],
+    batches: [{ ...batch }],
+    pigs: [],
+    expenses: [],
+    buyers: [],
+    sales: [],
+    payments: [],
+  };
 }
 
 test("purchase + operating costs agree with reports; editing and status changes count once", async () => {

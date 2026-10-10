@@ -2,6 +2,7 @@ import type {
   Batch,
   Buyer,
   Expense,
+  FarmInvestment,
   Payment,
   Pig,
   PigSale,
@@ -44,6 +45,7 @@ export interface FarmInvitation {
 export type BatchInput = Omit<Batch, "id" | "createdAt" | "updatedAt" | "purchaseCostsReconciled">;
 export type PigInput = Omit<Pig, "id">;
 export type ExpenseInput = Omit<Expense, "id" | "pigId" | "superseded">;
+export type InvestmentInput = Omit<FarmInvestment, "id">;
 export type BuyerInput = Omit<Buyer, "id">;
 export type SaleInput = Omit<PigSale, "id">;
 export type PaymentInput = Omit<Payment, "id">;
@@ -61,6 +63,8 @@ export interface PiggyTrackRepository {
   deletePig(id: string): Promise<void>;
   saveExpense(input: ExpenseInput, id?: string): Promise<Expense>;
   deleteExpense(id: string): Promise<void>;
+  saveInvestment(input: InvestmentInput, id?: string): Promise<FarmInvestment>;
+  deleteInvestment(id: string): Promise<void>;
   saveBuyer(input: BuyerInput, id?: string): Promise<Buyer>;
   deleteBuyer(id: string): Promise<void>;
   saveSale(input: SaleInput, id?: string): Promise<PigSale>;

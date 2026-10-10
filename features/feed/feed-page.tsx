@@ -1,5 +1,6 @@
 "use client";
 
+import { DatePicker } from "@/components/ui/date-picker";
 import { useMemo, useState } from "react";
 import { BatchSelector } from "@/components/batch-selector";
 import { Icon } from "@/components/ui/icon";
@@ -332,9 +333,9 @@ function FeedModal({
         </div>
         <label>
           Purchase date
-          <input
+          <DatePicker
             name="expenseDate"
-            type="date"
+            ariaLabel="Purchase date"
             required
             defaultValue={existing?.expenseDate ?? new Date().toISOString().slice(0, 10)}
           />

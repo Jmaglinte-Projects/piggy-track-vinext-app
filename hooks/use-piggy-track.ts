@@ -6,6 +6,7 @@ import type {
   BatchInput,
   BuyerInput,
   ExpenseInput,
+  InvestmentInput,
   FarmInvitation,
   PaymentInput,
   PigInput,
@@ -26,6 +27,8 @@ export interface PiggyTrackState {
   deletePig: (id: string) => Promise<void>;
   saveExpense: (input: ExpenseInput, id?: string) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
+  saveInvestment: (input: InvestmentInput, id?: string) => Promise<void>;
+  deleteInvestment: (id: string) => Promise<void>;
   saveBuyer: (input: BuyerInput, id?: string) => Promise<void>;
   deleteBuyer: (id: string) => Promise<void>;
   saveSale: (input: SaleInput, id?: string) => Promise<void>;
@@ -122,6 +125,8 @@ export function usePiggyTrack(enabled: boolean): PiggyTrackState {
     deletePig: (id) => mutate(() => application.deletePig(id)),
     saveExpense: (input, id) => mutate(() => application.saveExpense(input, id)),
     deleteExpense: (id) => mutate(() => application.deleteExpense(id)),
+    saveInvestment: (input, id) => mutate(() => application.saveInvestment(input, id)),
+    deleteInvestment: (id) => mutate(() => application.deleteInvestment(id)),
     saveBuyer: (input, id) => mutate(() => application.saveBuyer(input, id)),
     deleteBuyer: (id) => mutate(() => application.deleteBuyer(id)),
     saveSale: (input, id) => mutate(() => application.saveSale(input, id)),

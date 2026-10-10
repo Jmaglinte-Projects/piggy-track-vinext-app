@@ -4,10 +4,13 @@
   "private": true,
   "packageManager": "pnpm@11.24.0",
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.2.0",
+    "@radix-ui/react-popover": "^1.2.0",
     "@radix-ui/react-select": "^2.3.8",
     "@supabase/supabase-js": "^2.117.2",
     "@vinext/cloudflare": "^1.0.0",
     "react": "latest",
+    "react-day-picker": "^9.14.0",
     "react-dom": "latest",
     "react-server-dom-webpack": "^19.3.0",
     "vinext": "^1.0.0"

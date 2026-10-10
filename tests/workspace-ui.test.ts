@@ -7,6 +7,8 @@ import { PigsPage } from "@/features/pigs/pigs-page";
 import { ExpensesPage } from "@/features/expenses/expenses-page";
 import { FeedPage } from "@/features/feed/feed-page";
 import { SalesPage } from "@/features/sales/sales-page";
+import { InvestmentsPage } from "@/features/investments/investments-page";
+import { InvestmentSummary } from "@/features/investments/investment-summary";
 import { BuyersPage } from "@/features/buyers/buyers-page";
 import { SettingsPage } from "@/features/settings/settings-page";
 import { mockData } from "@/infrastructure/local/mock-data";
@@ -41,6 +43,28 @@ test("Viewer pages retain browsing controls and hide every record mutation actio
         onOpenBuyers: () => {},
       },
       "Record sale",
+    ],
+    [
+      InvestmentsPage,
+      {
+        ...base,
+        data: {
+          ...mockData,
+          investments: [
+            {
+              id: "investment",
+              name: "Pigpen",
+              category: "Construction" as const,
+              amount: 100000,
+              investmentDate: "2026-10-10",
+              notes: "",
+            },
+          ],
+        },
+        onSave: noop,
+        onDelete: noop,
+      },
+      "Add investment",
     ],
     [BuyersPage, { ...base, onSave: noop, onDelete: noop }, "Add buyer"],
   ] as const;
@@ -106,4 +130,39 @@ test("Viewer settings show the correct workspace role without member emails or o
   assert.equal((html.match(/>Current</g) ?? []).length, 1);
   assert.ok(html.includes("Viewer"));
   assert.ok(buttons(html).includes("Join farm workspace"));
+});
+
+test("farm setup records and their report render without batches", () => {
+  const data = {
+    ...mockData,
+    batches: [],
+    investments: [
+      {
+        id: "investment",
+        name: "Pigpen",
+        category: "Construction" as const,
+        amount: 100000,
+        investmentDate: "2026-10-10",
+        notes: "Foundation",
+      },
+    ],
+  };
+  const html = renderToStaticMarkup(
+    createElement(InvestmentsPage, {
+      data,
+      canEdit: true,
+      saving: false,
+      onSave: noop,
+      onDelete: noop,
+    }),
+  );
+  assert.match(html, /Add investment/);
+  assert.match(html, /Pigpen/);
+  assert.match(html, /₱100,000.00/);
+  const report = renderToStaticMarkup(
+    createElement(InvestmentSummary, { investments: data.investments, details: true }),
+  );
+  assert.match(report, /Foundation/);
+  assert.match(report, /Whole farm/);
+  assert.match(report, /₱100,000.00/);
 });

@@ -1,9 +1,11 @@
+import { validateInvestment } from "@/domain/investments";
 import { WorkspaceAccessError } from "@/application/ports/piggy-track-repository";
 import type { FarmPreferenceStore } from "@/application/ports/farm-preference-store";
 import type {
   BatchInput,
   BuyerInput,
   ExpenseInput,
+  InvestmentInput,
   FarmInvitation,
   PaymentInput,
   PigInput,
@@ -101,6 +103,17 @@ export class PiggyTrackApplication {
 
   deleteExpense(id: string): Promise<WorkspaceSnapshot> {
     return this.executeAndReload(() => this.repository.deleteExpense(id));
+  }
+
+  saveInvestment(input: InvestmentInput, id?: string): Promise<WorkspaceSnapshot> {
+    return this.executeAndReload(() => {
+      validateInvestment(input);
+      return this.repository.saveInvestment(input, id);
+    });
+  }
+
+  deleteInvestment(id: string): Promise<WorkspaceSnapshot> {
+    return this.executeAndReload(() => this.repository.deleteInvestment(id));
   }
 
   saveBuyer(input: BuyerInput, id?: string): Promise<WorkspaceSnapshot> {

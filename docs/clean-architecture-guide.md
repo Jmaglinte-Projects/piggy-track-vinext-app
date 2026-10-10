@@ -242,7 +242,7 @@ Before merging a change, verify:
 - Supabase rows are mapped to domain entities inside infrastructure.
 - External services are accessed through an application port.
 - Calculated totals are not persisted unless a documented business requirement requires a snapshot.
-- Pig purchase records and Piglets expense transactions remain separate.
+- Pig purchase records own one linked Piglets expense, synchronized atomically by the repository. Financial calculations use the ledger only; replaced legacy entries are excluded.
 - New behavior works with both the local and Supabase repository implementations where applicable.
 - TypeScript, lint, and production build pass.
 

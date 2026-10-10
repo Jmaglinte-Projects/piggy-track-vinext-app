@@ -266,6 +266,7 @@ export function AppShell() {
               saving={store.saving}
               onSave={store.saveExpense}
               onDelete={store.deleteExpense}
+              onReconcile={store.reconcilePigPurchases}
             />
           )}
           {page === "Feed" && currentBatchId && (

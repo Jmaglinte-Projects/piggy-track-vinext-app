@@ -43,7 +43,9 @@ export function Dashboard({
 }: DashboardProps) {
   const batch = data.batches.find((item) => item.id === selectedBatchId);
   const pigs = data.pigs.filter((pig) => pig.batchId === selectedBatchId);
-  const expenses = data.expenses.filter((expense) => expense.batchId === selectedBatchId);
+  const expenses = data.expenses.filter(
+    (expense) => expense.batchId === selectedBatchId && !expense.superseded,
+  );
   const sales = data.sales.filter((sale) => sale.batchId === selectedBatchId);
   const saleIds = new Set(sales.map((sale) => sale.id));
   const payments = data.payments.filter((payment) => saleIds.has(payment.saleId));
@@ -87,9 +89,9 @@ export function Dashboard({
 
   const metrics = [
     {
-      label: "Total expenses",
+      label: "Batch total expenses",
       value: formatCurrency(totalExpenses),
-      hint: "All recorded costs",
+      hint: "Purchases and expenses for this batch",
       icon: "receipt" as const,
     },
     {
@@ -100,7 +102,7 @@ export function Dashboard({
       tone: "positive" as const,
     },
     {
-      label: "Net profit",
+      label: batch.status === "Completed" ? "Net profit" : "Sales minus costs to date",
       value: formatCurrency(netProfit),
       hint: `${formatPercent(calculateRoi(netProfit, totalExpenses))} return on costs`,
       icon: "trend" as const,
@@ -123,6 +125,14 @@ export function Dashboard({
 
   return (
     <div className="dashboard-stack">
+      {batch.purchaseCostsReconciled === false && (
+        <div className="separation-note warning">
+          Purchase costs need review. Totals still use your existing Piglets expenses.
+          <button type="button" className="text-button" onClick={onOpenExpenses}>
+            Review in Expenses
+          </button>
+        </div>
+      )}
       <section className="metrics-grid" aria-label="Financial summary">
         {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />

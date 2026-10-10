@@ -23,6 +23,7 @@ export interface Batch {
   endDate: string | null;
   status: BatchStatus;
   notes: string;
+  purchaseCostsReconciled?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +40,8 @@ export interface Pig {
 }
 
 export interface Expense {
+  pigId?: string;
+  superseded?: boolean;
   id: string;
   batchId: string;
   category: ExpenseCategory;

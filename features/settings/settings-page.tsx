@@ -39,6 +39,8 @@ export function SettingsPage({
   const [error, setError] = useState<string | null>(null);
   const owner = workspace.farmRole === "Owner";
 
+  console.table(workspace);
+
   useEffect(() => {
     setFarmName(workspace.farmName);
     setInvitation(null);

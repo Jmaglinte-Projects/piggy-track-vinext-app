@@ -13,7 +13,10 @@ export function calculateSaleTotal(sale: PigSale): number {
 }
 
 export function calculateBatchExpenses(expenses: Expense[]): number {
-  return expenses.reduce((total, expense) => total + calculateExpenseAmount(expense), 0);
+  return expenses.reduce(
+    (total, expense) => total + (expense.superseded ? 0 : calculateExpenseAmount(expense)),
+    0,
+  );
 }
 
 export function calculateBatchSales(sales: PigSale[]): number {

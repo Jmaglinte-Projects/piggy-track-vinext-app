@@ -69,6 +69,10 @@ export class PiggyTrackApplication {
     return this.executeAndReload(() => this.repository.deleteBatch(id));
   }
 
+  reconcilePigPurchases(batchId: string): Promise<WorkspaceSnapshot> {
+    return this.executeAndReload(() => this.repository.reconcilePigPurchases(batchId));
+  }
+
   savePig(input: PigInput, id?: string): Promise<WorkspaceSnapshot> {
     return this.executeAndReload(() => this.repository.savePig(input, id));
   }

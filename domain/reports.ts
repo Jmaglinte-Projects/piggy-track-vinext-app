@@ -34,7 +34,9 @@ export function buildBatchReport(data: PiggyTrackData, batchId: string): BatchRe
   if (!batch) return null;
 
   const pigs = data.pigs.filter((pig) => pig.batchId === batchId);
-  const expenses = data.expenses.filter((expense) => expense.batchId === batchId);
+  const expenses = data.expenses.filter(
+    (expense) => expense.batchId === batchId && !expense.superseded,
+  );
   const feedExpenses = expenses.filter((expense) => expense.category === "Feed");
   const sales = data.sales.filter((sale) => sale.batchId === batchId);
   const saleIds = new Set(sales.map((sale) => sale.id));

@@ -31,14 +31,55 @@ function newId(prefix: string): string {
   return `${prefix}-${crypto.randomUUID()}`;
 }
 
+function purchaseExpense(data: PiggyTrackData, pig: Pig): void {
+  const existing = data.expenses.find((expense) => expense.pigId === pig.id);
+  const expense: Expense = {
+    id: existing?.id ?? newId("expense"),
+    pigId: pig.id,
+    batchId: pig.batchId,
+    category: "Piglets",
+    description: `Purchase of ${pig.tagNumber}`,
+    quantity: 1,
+    unit: "head",
+    unitPrice: pig.purchasePrice,
+    // Purchase date is not yet recorded on pigs; use batch start date.
+    expenseDate:
+      existing?.expenseDate ?? data.batches.find((batch) => batch.id === pig.batchId)!.startDate,
+    notes:
+      existing?.notes ??
+      "Recorded automatically from pig purchase price. Date defaults to batch start date.",
+  };
+  data.expenses = existing
+    ? data.expenses.map((item) => (item.id === existing.id ? expense : item))
+    : [expense, ...data.expenses];
+}
+
 function readData(): PiggyTrackData {
   const stored = window.localStorage.getItem(storageKey);
-  if (!stored) return structuredClone(mockData);
+  let data: PiggyTrackData;
   try {
-    return JSON.parse(stored) as PiggyTrackData;
+    data = stored ? (JSON.parse(stored) as PiggyTrackData) : structuredClone(mockData);
   } catch {
-    return structuredClone(mockData);
+    data = structuredClone(mockData);
   }
+  for (const batch of data.batches) {
+    if (batch.purchaseCostsReconciled === undefined) {
+      batch.purchaseCostsReconciled = !data.expenses.some(
+        (expense) =>
+          expense.batchId === batch.id &&
+          expense.category === "Piglets" &&
+          !expense.pigId &&
+          !expense.superseded,
+      );
+    }
+    if (batch.purchaseCostsReconciled) {
+      for (const pig of data.pigs.filter((item) => item.batchId === batch.id)) {
+        if (!data.expenses.some((expense) => expense.pigId === pig.id)) purchaseExpense(data, pig);
+      }
+    }
+  }
+  writeData(data);
+  return data;
 }
 
 function writeData(data: PiggyTrackData): void {
@@ -86,6 +127,7 @@ export class LocalPiggyTrackRepository implements PiggyTrackRepository {
     const existing = id ? data.batches.find((item) => item.id === id) : undefined;
     const batch: Batch = {
       ...input,
+      purchaseCostsReconciled: existing?.purchaseCostsReconciled ?? true,
       id: id ?? newId("batch"),
       createdAt: existing?.createdAt ?? now(),
       updatedAt: now(),
@@ -109,10 +151,35 @@ export class LocalPiggyTrackRepository implements PiggyTrackRepository {
     writeData(data);
   }
 
+  async reconcilePigPurchases(batchId: string): Promise<void> {
+    const data = readData();
+    const batch = data.batches.find((item) => item.id === batchId);
+    if (!batch) throw new Error("Batch not found.");
+    if (batch.purchaseCostsReconciled) return;
+    data.expenses = data.expenses.map((expense) =>
+      expense.batchId === batchId && expense.category === "Piglets" && !expense.pigId
+        ? { ...expense, superseded: true }
+        : expense,
+    );
+    batch.purchaseCostsReconciled = true;
+    for (const pig of data.pigs.filter((item) => item.batchId === batchId))
+      purchaseExpense(data, pig);
+    writeData(data);
+  }
+
   async savePig(input: PigInput, id?: string): Promise<Pig> {
     const data = readData();
+    const existing = id ? data.pigs.find((item) => item.id === id) : undefined;
+    if (id && !existing) throw new Error("Pig not found.");
+    const batch = data.batches.find((item) => item.id === input.batchId);
+    if (!batch) throw new Error("Batch not found.");
+    if (!Number.isFinite(input.purchasePrice) || input.purchasePrice < 0)
+      throw new Error("Purchase price must be zero or greater.");
+    if (existing && existing.batchId !== input.batchId)
+      throw new Error("A pig's purchase belongs to its original batch. Keep the original batch.");
     const pig: Pig = { ...input, id: id ?? newId("pig") };
     data.pigs = id ? data.pigs.map((item) => (item.id === id ? pig : item)) : [pig, ...data.pigs];
+    if (batch.purchaseCostsReconciled) purchaseExpense(data, pig);
     writeData(data);
     return pig;
   }
@@ -121,12 +188,26 @@ export class LocalPiggyTrackRepository implements PiggyTrackRepository {
     const data = readData();
     if (data.sales.some((item) => item.pigId === id))
       throw new Error("A pig with a sale record cannot be deleted.");
+    if (data.expenses.some((item) => item.pigId === id))
+      throw new Error("This pig has a purchase expense. Mark it Removed to preserve its cost.");
     data.pigs = data.pigs.filter((item) => item.id !== id);
     writeData(data);
   }
 
   async saveExpense(input: ExpenseInput, id?: string): Promise<Expense> {
     const data = readData();
+    const existing = id ? data.expenses.find((item) => item.id === id) : undefined;
+    if (id && !existing) throw new Error("Expense not found.");
+    if (existing?.pigId || existing?.superseded)
+      throw new Error("Purchase history is protected. Edit the pig's purchase price instead.");
+    if (
+      input.category === "Piglets" &&
+      (!existing ||
+        existing.category !== "Piglets" ||
+        existing.batchId !== input.batchId ||
+        data.batches.find((batch) => batch.id === input.batchId)?.purchaseCostsReconciled)
+    )
+      throw new Error("Add pig purchase costs through Pigs to avoid counting them twice.");
     const expense: Expense = { ...input, id: id ?? newId("expense") };
     data.expenses = id
       ? data.expenses.map((item) => (item.id === id ? expense : item))
@@ -137,6 +218,9 @@ export class LocalPiggyTrackRepository implements PiggyTrackRepository {
 
   async deleteExpense(id: string): Promise<void> {
     const data = readData();
+    const expense = data.expenses.find((item) => item.id === id);
+    if (expense?.pigId || expense?.superseded)
+      throw new Error("Purchase history is protected. Edit the pig's purchase price instead.");
     data.expenses = data.expenses.filter((item) => item.id !== id);
     writeData(data);
   }

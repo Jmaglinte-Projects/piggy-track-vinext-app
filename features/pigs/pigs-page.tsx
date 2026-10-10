@@ -77,6 +77,14 @@ export function PigsPage({
         selectedBatchId={selectedBatchId}
         onChange={onBatchChange}
       />
+      {data.batches.find((batch) => batch.id === selectedBatchId)?.purchaseCostsReconciled ===
+        false && (
+        <div className="separation-note warning">
+          Check all pig records, then review purchase costs in Expenses. Existing manual costs
+          remain in totals until review; new pigs and purchase price edits enter totals when you
+          confirm.
+        </div>
+      )}
       <div className="filter-bar" role="group" aria-label="Filter pigs by status">
         {["All", ...pigStatuses].map((status) => (
           <button
@@ -128,9 +136,13 @@ export function PigsPage({
                 <button type="button" onClick={() => setEditing(pig)}>
                   Edit
                 </button>
-                <button type="button" className="delete-link" onClick={() => setDeleting(pig)}>
-                  Delete
-                </button>
+                {data.expenses.some((expense) => expense.pigId === pig.id) ? (
+                  <small>Use Removed to retain cost</small>
+                ) : (
+                  <button type="button" className="delete-link" onClick={() => setDeleting(pig)}>
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -145,7 +157,7 @@ export function PigsPage({
       {editing && (
         <Modal
           title={editing === "new" ? "Add pig" : `Edit ${editing.tagNumber}`}
-          description="Purchase details stay separate from expense transactions."
+          description="Purchase price is included in this batch’s expenses automatically."
           onClose={() => setEditing(null)}
         >
           <form className="record-form" onSubmit={submit}>
@@ -228,8 +240,9 @@ export function PigsPage({
               />
             </label>
             <div className="separation-note">
-              Pig purchase details do not affect expense totals. Record a separate Piglets expense
-              when needed.
+              Saving this pig records its purchase expense once. Editing the purchase price updates
+              that expense. Costs remain when the pig is sold, dies, or is marked Removed. For
+              batches awaiting review, purchase costs enter totals after confirmation in Expenses.
             </div>
             <div className="form-actions">
               <button className="secondary-button" type="button" onClick={() => setEditing(null)}>

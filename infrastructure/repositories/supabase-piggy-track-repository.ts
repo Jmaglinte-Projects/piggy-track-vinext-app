@@ -39,6 +39,7 @@ function mapBatch(row: BatchRow): Batch {
     id: row.id,
     name: row.name,
     startDate: row.start_date,
+    purchaseCostsReconciled: row.purchase_costs_reconciled,
     endDate: row.end_date,
     status: row.status,
     notes: row.notes,
@@ -65,6 +66,8 @@ function mapExpense(row: ExpenseRow): Expense {
     id: row.id,
     batchId: row.batch_id,
     category: row.category as ExpenseCategory,
+    pigId: row.pig_id ?? undefined,
+    superseded: row.superseded,
     description: row.description,
     quantity: Number(row.quantity),
     unit: row.unit,
@@ -262,6 +265,13 @@ export class SupabasePiggyTrackRepository implements PiggyTrackRepository {
 
   async deleteBatch(id: string): Promise<void> {
     await this.remove("batches", id, "Unable to delete batch");
+  }
+
+  async reconcilePigPurchases(batchId: string): Promise<void> {
+    const result = await getSupabaseClient().rpc("reconcile_pig_purchases", {
+      target_batch_id: batchId,
+    });
+    if (result.error) fail("Unable to reconcile purchase costs", result.error);
   }
 
   async savePig(input: PigInput, id?: string): Promise<Pig> {

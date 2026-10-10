@@ -36,12 +36,13 @@ export function ReportsPage({ data, selectedBatchId, onBatchChange }: ReportsPag
       </div>
     );
 
+  const purchaseWarning = report.batch.purchaseCostsReconciled === false;
   const collectionRate =
     report.totalSales === 0 ? 0 : (report.paymentsReceived / report.totalSales) * 100;
   const maxExpense = Math.max(...report.expenseBreakdown.map((entry) => entry.amount), 1);
   const metrics = [
     {
-      label: "Net profit",
+      label: report.batch.status === "Completed" ? "Net profit" : "Sales minus costs to date",
       value: formatCurrency(report.netProfit),
       detail: `${formatPercent(report.roi)} ROI`,
       tone: report.netProfit >= 0 ? "positive" : "negative",
@@ -87,6 +88,12 @@ export function ReportsPage({ data, selectedBatchId, onBatchChange }: ReportsPag
 
   return (
     <div className="space-y-5">
+      {purchaseWarning && (
+        <div className="separation-note warning">
+          Purchase costs need review in Expenses. This batch still uses its existing manual Piglets
+          expenses.
+        </div>
+      )}
       <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#818b86]">
@@ -198,7 +205,9 @@ export function ReportsPage({ data, selectedBatchId, onBatchChange }: ReportsPag
               value={`− ${formatCurrency(report.totalExpenses)}`}
             />
             <ReportLine
-              label="Net profit"
+              label={
+                report.batch.status === "Completed" ? "Net profit" : "Sales minus costs to date"
+              }
               value={formatCurrency(report.netProfit)}
               emphasized
               tone={report.netProfit >= 0 ? "positive" : "negative"}
@@ -239,7 +248,7 @@ export function ReportsPage({ data, selectedBatchId, onBatchChange }: ReportsPag
                 <th className="px-4 py-3 font-extrabold">Feed</th>
                 <th className="px-4 py-3 font-extrabold">Sales</th>
                 <th className="px-4 py-3 font-extrabold">Received</th>
-                <th className="px-4 py-3 font-extrabold">Net profit</th>
+                <th className="px-4 py-3 font-extrabold">Sales minus costs</th>
                 <th className="px-5 py-3 font-extrabold">ROI</th>
               </tr>
             </thead>

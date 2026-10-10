@@ -55,6 +55,7 @@ export interface Database {
           farm_id: string;
           name: string;
           start_date: string;
+          purchase_costs_reconciled: boolean;
           end_date: string | null;
           status: "Active" | "Completed" | "Archived";
           notes: string;
@@ -122,6 +123,8 @@ export interface Database {
           expense_date: string;
           notes: string;
           feed_type: string | null;
+          pig_id: string | null;
+          superseded: boolean;
         } & AuditFields,
         {
           id?: string;
@@ -231,6 +234,7 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      reconcile_pig_purchases: { Args: { target_batch_id: string }; Returns: undefined };
       create_farm: { Args: { farm_name: string }; Returns: string };
       record_pig_sale: {
         Args: {

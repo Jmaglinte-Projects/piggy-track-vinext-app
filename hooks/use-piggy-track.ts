@@ -21,6 +21,7 @@ export interface PiggyTrackState {
   reload: () => Promise<void>;
   saveBatch: (input: BatchInput, id?: string) => Promise<void>;
   deleteBatch: (id: string) => Promise<void>;
+  reconcilePigPurchases: (batchId: string) => Promise<void>;
   savePig: (input: PigInput, id?: string) => Promise<void>;
   deletePig: (id: string) => Promise<void>;
   saveExpense: (input: ExpenseInput, id?: string) => Promise<void>;
@@ -116,6 +117,7 @@ export function usePiggyTrack(enabled: boolean): PiggyTrackState {
     reload,
     saveBatch: (input, id) => mutate(() => application.saveBatch(input, id)),
     deleteBatch: (id) => mutate(() => application.deleteBatch(id)),
+    reconcilePigPurchases: (batchId) => mutate(() => application.reconcilePigPurchases(batchId)),
     savePig: (input, id) => mutate(() => application.savePig(input, id)),
     deletePig: (id) => mutate(() => application.deletePig(id)),
     saveExpense: (input, id) => mutate(() => application.saveExpense(input, id)),

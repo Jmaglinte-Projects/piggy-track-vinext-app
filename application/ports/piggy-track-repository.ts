@@ -34,9 +34,9 @@ export interface FarmInvitation {
   expiresAt: string;
 }
 
-export type BatchInput = Omit<Batch, "id" | "createdAt" | "updatedAt">;
+export type BatchInput = Omit<Batch, "id" | "createdAt" | "updatedAt" | "purchaseCostsReconciled">;
 export type PigInput = Omit<Pig, "id">;
-export type ExpenseInput = Omit<Expense, "id">;
+export type ExpenseInput = Omit<Expense, "id" | "pigId" | "superseded">;
 export type BuyerInput = Omit<Buyer, "id">;
 export type SaleInput = Omit<PigSale, "id">;
 export type PaymentInput = Omit<Payment, "id">;
@@ -49,6 +49,7 @@ export interface PiggyTrackRepository {
   removeFarmMember(userId: string): Promise<void>;
   saveBatch(input: BatchInput, id?: string): Promise<Batch>;
   deleteBatch(id: string): Promise<void>;
+  reconcilePigPurchases(batchId: string): Promise<void>;
   savePig(input: PigInput, id?: string): Promise<Pig>;
   deletePig(id: string): Promise<void>;
   saveExpense(input: ExpenseInput, id?: string): Promise<Expense>;

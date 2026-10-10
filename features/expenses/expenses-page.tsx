@@ -19,6 +19,7 @@ interface ExpensesPageProps {
   saving: boolean;
   onSave: (input: ExpenseInput, id?: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onReconcile: (batchId: string) => Promise<void>;
 }
 
 export function ExpensesPage({
@@ -28,7 +29,22 @@ export function ExpensesPage({
   saving,
   onSave,
   onDelete,
+  onReconcile,
 }: ExpensesPageProps) {
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const batch = data.batches.find((item) => item.id === selectedBatchId);
+  const purchaseTotal = data.pigs
+    .filter((pig) => pig.batchId === selectedBatchId)
+    .reduce((sum, pig) => sum + pig.purchasePrice, 0);
+  const legacyPurchases = data.expenses.filter(
+    (expense) =>
+      expense.batchId === selectedBatchId &&
+      expense.category === "Piglets" &&
+      !expense.pigId &&
+      !expense.superseded,
+  );
+  const legacyTotal = calculateBatchExpenses(legacyPurchases);
   const [editing, setEditing] = useState<Expense | "new" | null>(null);
   const [deleting, setDeleting] = useState<Expense | null>(null);
   const [filter, setFilter] = useState<"All" | ExpenseCategory>("All");
@@ -47,7 +63,11 @@ export function ExpensesPage({
       <PageHeader
         eyebrow="Financial ledger"
         title="Expenses"
-        description="Record every cost as a transaction—totals are calculated automatically."
+        description={
+          batch?.purchaseCostsReconciled === false
+            ? "Review manual purchase costs to enable automatic purchases. Add feed and other costs here."
+            : "Pig purchases are recorded automatically. Add feed and other costs here."
+        }
         actionLabel="Add expense"
         onAction={() => setEditing("new")}
       />
@@ -56,6 +76,26 @@ export function ExpensesPage({
         selectedBatchId={selectedBatchId}
         onChange={onBatchChange}
       />
+      {batch?.purchaseCostsReconciled === false && (
+        <div className="separation-note warning">
+          <strong>Review existing pig purchase costs</strong>
+          <p>
+            This batch uses manual Piglets expenses. Review them before enabling automatic purchase
+            costs.
+          </p>
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={saving}
+            onClick={() => {
+              setReviewError(null);
+              setReviewing(true);
+            }}
+          >
+            Review purchase costs
+          </button>
+        </div>
+      )}
       <div className="expense-overview">
         <div>
           <span>Batch expenses</span>
@@ -63,10 +103,10 @@ export function ExpensesPage({
         </div>
         <div>
           <span>Transactions</span>
-          <strong>{allExpenses.length}</strong>
+          <strong>{allExpenses.filter((expense) => !expense.superseded).length}</strong>
         </div>
         <div>
-          <span>Feed share</span>
+          <span>Feed expenses</span>
           <strong>
             {formatCurrency(
               calculateBatchExpenses(allExpenses.filter((expense) => expense.category === "Feed")),
@@ -101,6 +141,11 @@ export function ExpensesPage({
                 <strong>{expense.description}</strong>
                 <small>
                   {expense.category}
+                  {expense.pigId
+                    ? " · Linked purchase"
+                    : expense.superseded
+                      ? " · Replaced — excluded from totals"
+                      : ""}
                   {expense.feedType ? ` · ${expense.feedType}` : ""}
                 </small>
               </div>
@@ -118,12 +163,22 @@ export function ExpensesPage({
                 <strong>{formatCurrency(calculateExpenseAmount(expense))}</strong>
               </div>
               <div className="row-actions" data-label="Actions">
-                <button type="button" onClick={() => setEditing(expense)}>
-                  Edit
-                </button>
-                <button type="button" className="delete-link" onClick={() => setDeleting(expense)}>
-                  Delete
-                </button>
+                {expense.pigId || expense.superseded ? (
+                  <small>{expense.pigId ? "Edit purchase in Pigs" : "Purchase history"}</small>
+                ) : (
+                  <>
+                    <button type="button" onClick={() => setEditing(expense)}>
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="delete-link"
+                      onClick={() => setDeleting(expense)}
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}
@@ -135,6 +190,72 @@ export function ExpensesPage({
           </div>
         )}
       </section>
+      {reviewing && batch && (
+        <Modal
+          title="Review purchase costs"
+          description={`Reconcile ${batch.name}`}
+          onClose={() => setReviewing(false)}
+        >
+          <div className="record-form">
+            {reviewError && <div className="form-error">{reviewError}</div>}
+            <p>
+              Confirm each pig's purchase price in Pigs before continuing. Any transport or other
+              extra costs in a manual Piglets entry should first be recorded in the correct expense
+              category.
+            </p>
+            {legacyPurchases.map((expense) => (
+              <p key={expense.id}>
+                {expense.description}:{" "}
+                <strong>{formatCurrency(calculateExpenseAmount(expense))}</strong>
+              </p>
+            ))}
+            <div className="calculation-preview">
+              <span>Manual Piglets entries being replaced</span>
+              <strong>{formatCurrency(legacyTotal)}</strong>
+            </div>
+            <div className="calculation-preview">
+              <span>Linked pig purchase costs</span>
+              <strong>{formatCurrency(purchaseTotal)}</strong>
+            </div>
+            <div className="calculation-preview">
+              <span>New batch total expenses</span>
+              <strong>
+                {formatCurrency(calculateBatchExpenses(allExpenses) - legacyTotal + purchaseTotal)}
+              </strong>
+            </div>
+            <p>
+              Old entries will stay as history and be excluded from totals. Future purchase price
+              changes will update the linked expenses automatically. This change cannot be reversed.
+            </p>
+            <div className="form-actions">
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => setReviewing(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="primary-button"
+                type="button"
+                disabled={saving}
+                onClick={async () => {
+                  try {
+                    await onReconcile(selectedBatchId);
+                    setReviewing(false);
+                  } catch (cause) {
+                    setReviewError(
+                      cause instanceof Error ? cause.message : "Unable to reconcile purchases.",
+                    );
+                  }
+                }}
+              >
+                {saving ? "Saving…" : "Confirm purchase costs"}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
       {editing && (
         <ExpenseModal
           expense={editing}
@@ -242,7 +363,12 @@ function ExpenseModal({
               name="category"
               value={category}
               onValueChange={(value) => setCategory(value as ExpenseCategory)}
-              options={selectOptions(expenseCategories)}
+              options={selectOptions(
+                expenseCategories.filter(
+                  (item) =>
+                    item !== "Piglets" || (expense !== "new" && expense.category === "Piglets"),
+                ),
+              )}
             />
           </label>
         </div>
@@ -331,8 +457,8 @@ function ExpenseModal({
         </label>
         {category === "Piglets" && (
           <div className="separation-note warning">
-            Pig records and Piglets expenses are separate. Check that this cost has not already been
-            entered as another expense.
+            This is a legacy purchase entry. Review purchase costs to replace it with linked pig
+            purchases. Move any extra costs to their correct categories first.
           </div>
         )}
         <div className="form-actions">
